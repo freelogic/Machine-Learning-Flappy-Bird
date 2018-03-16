@@ -325,8 +325,8 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 300; //上下两棵树之间的距离GAP
-	this.V_BIRD_FLY = -300; //BIRD水平飞行的速度;
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 250; //上下两棵树之间的距离GAP
+	this.V_BIRD_FLY = -400; //BIRD水平飞行的速度;
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
