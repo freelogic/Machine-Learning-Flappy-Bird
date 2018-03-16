@@ -22,10 +22,12 @@ App.Main = function(game){
 	this.STATE_GAMEOVER = 4;
 	
 	this.BARRIER_DISTANCE = 300;
+
 }
 
 App.Main.prototype = {
 	preload : function(){
+	    //通过框架提供的函数拿图片（一张图片包含很多子图，切图出来）
 		this.game.load.spritesheet('imgBird', 'assets/img_bird.png', 36, 36, 20);
 		this.game.load.spritesheet('imgTree', 'assets/img_tree.png', 90, 400, 2);
 		this.game.load.spritesheet('imgButtons', 'assets/img_buttons.png', 110, 40, 3);
@@ -34,7 +36,7 @@ App.Main.prototype = {
 		this.game.load.image('imgGround', 'assets/img_ground.png');
 		this.game.load.image('imgPause', 'assets/img_pause.png');
 		this.game.load.image('imgLogo', 'assets/img_logo.png');
-		
+		//按照框架要求，提供了font字体文件及背景，供逻辑使用；
 		this.load.bitmapFont('fnt_chars_black', 'assets/fnt_chars_black.png', 'assets/fnt_chars_black.fnt');
 		this.load.bitmapFont('fnt_digits_blue', 'assets/fnt_digits_blue.png', 'assets/fnt_digits_blue.fnt');
 		this.load.bitmapFont('fnt_digits_green', 'assets/fnt_digits_green.png', 'assets/fnt_digits_green.fnt');
@@ -57,9 +59,11 @@ App.Main.prototype = {
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		// set the gravity of the world
-		this.game.physics.arcade.gravity.y = 1300;
+		this.game.physics.arcade.gravity.y = 1300; //设定游戏世界的重力因子(效果)
 		
 		// create a new Genetic Algorithm with a population of 10 units which will be evolving by using 4 top units
+		//这里只给出了生成(遗传)算法的接口（10选4策略）
+		//这里可以研究一下；
 		this.GA = new GeneticAlgorithm(10, 4);
 		
 		// create a BirdGroup which contains a number of Bird objects
@@ -70,20 +74,23 @@ App.Main.prototype = {
 	
 		// create a BarrierGroup which contains a number of Tree Groups
 		// (each Tree Group contains a top and bottom Tree object)
+		// 1个BarrierGroup是多组TREEGROUP，而1个TREEGROUP是上下2两棵树；
 		this.BarrierGroup = this.game.add.group();		
 		for (var i = 0; i < 4; i++){
 			new TreeGroup(this.game, this.BarrierGroup, i);
 		}
 		
 		// create a Target Point sprite
+		//目标食物点（两棵树之间）
 		this.TargetPoint = this.game.add.sprite(0, 0, 'imgTarget');
 		this.TargetPoint.anchor.setTo(0.5);
 		
 		// create a scrolling Ground object
 		this.Ground = this.game.add.tileSprite(0, this.game.height-100, this.game.width-370, 100, 'imgGround');
-		this.Ground.autoScroll(-200, 0);
+		this.Ground.autoScroll(-300, 0);//底部背景草地的平移速度不同，营造视觉层次感效果！
 		
 		// create a BitmapData image for drawing head-up display (HUD) on it
+		// 右侧的计分统计显示
 		this.bmdStatus = this.game.make.bitmapData(370, this.game.height);
 		this.bmdStatus.addToWorld(this.game.width - this.bmdStatus.width, 0);
 		
@@ -188,20 +195,25 @@ App.Main.prototype = {
 				
 				this.BirdGroup.forEachAlive(function(bird){
 					// calculate the current fitness and the score for this bird
+					//TODO：待研究
 					bird.fitness_curr = this.distance - this.game.physics.arcade.distanceBetween(bird, this.TargetPoint);
 					bird.score_curr = this.score;
 					
 					// check collision between a bird and the target barrier
+					//TODO：待研究
 					this.game.physics.arcade.collide(bird, this.targetBarrier, this.onDeath, null, this);
 					
 					if (bird.alive){
 						// check if a bird passed through the gap of the target barrier
+						// 只要有一个bird超越了目标点(上下树的中点)就设定下一个目标点
 						if (bird.x > this.TargetPoint.x) isNextTarget = true;
 						
 						// check if a bird flies out of vertical bounds
+						//飞出上下界限(飞出屏幕)则设定为死亡
 						if (bird.y<0 || bird.y>610) this.onDeath(bird);
 						
 						// perform a proper action (flap yes/no) for this bird by activating its neural network
+						//根据神经网络判断当前的input1/2输入后，当前的神经网络NN给出了决策是flap煽动翅膀？还是noflap模拟重力下坠？
 						this.GA.activateBrain(bird, this.TargetPoint);
 					}
 				}, this);
@@ -213,6 +225,7 @@ App.Main.prototype = {
 				}
 				
 				// if the first barrier went out of the left bound then restart it on the right side
+				//TODO：待研究 （循环用树？）
 				if (this.firstBarrier.getWorldX() < -this.firstBarrier.width){
 					this.firstBarrier.restart(this.lastBarrier.getWorldX() + this.BARRIER_DISTANCE);
 					
@@ -310,6 +323,10 @@ var TreeGroup = function(game, parent, index){
 	
 	this.add(this.topTree); // add the top Tree to this group
 	this.add(this.bottomTree); // add the bottom Tree to this group
+
+	//CC: additional parameters
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 300; //上下两棵树之间的距离GAP
+	this.V_BIRD_FLY = -300; //BIRD水平飞行的速度;
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
@@ -317,12 +334,14 @@ TreeGroup.prototype.constructor = TreeGroup;
 
 TreeGroup.prototype.restart = function(x) {
 	this.topTree.reset(0, 0);
-	this.bottomTree.reset(0, this.topTree.height + 130);
+	//this.bottomTree.reset(0, this.topTree.height + 130);
+	this.bottomTree.reset(0, this.topTree.height + this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE);
 
 	this.x = x;
 	this.y = this.game.rnd.integerInRange(110-this.topTree.height, -20);
 
-	this.setAll('body.velocity.x', -200);
+	//this.setAll('body.velocity.x', -200); //velocity：速率
+	this.setAll('body.velocity.x', this.V_BIRD_FLY); //velocity：飞鸟(或称“移屏”)速率，太快将无法学习到收敛和始终成功，因为可能物理上飞行无法适应突变，翅膀太慢！
 };
 
 TreeGroup.prototype.getWorldX = function() {
@@ -330,11 +349,12 @@ TreeGroup.prototype.getWorldX = function() {
 };
 
 TreeGroup.prototype.getGapX = function() {
-	return this.bottomTree.world.x + this.bottomTree.width;
+	return this.bottomTree.world.x + this.bottomTree.width;//求两树中心点的水平位置X
 };
 
 TreeGroup.prototype.getGapY = function() {
-	return this.bottomTree.world.y - 65;
+	//return this.bottomTree.world.y - 65;
+	return this.bottomTree.world.y - this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE/2; //求两树中心点的高Y
 };
 
 /***********************************************************************************
@@ -370,6 +390,9 @@ var Bird = function(game, x, y, index) {
 
 	// enable physics on the bird
 	this.game.physics.arcade.enableBody(this);
+
+	//CC: additional parameters
+	this.V_BIRD_FLAPPY = -500; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
@@ -387,7 +410,8 @@ Bird.prototype.restart = function(iteration){
 };
 
 Bird.prototype.flap = function(){
-	this.body.velocity.y = -400;
+	//this.body.velocity.y = -400;
+	this.body.velocity.y = this.V_BIRD_FLAPPY;
 };
 
 Bird.prototype.death = function(){
