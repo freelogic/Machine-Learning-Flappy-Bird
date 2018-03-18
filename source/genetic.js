@@ -32,7 +32,8 @@ GeneticAlgorithm.prototype = {
 		for (var i=0; i<this.max_units; i++){
 			// create a new unit by generating a random Synaptic neural network
 			// with 2 neurons in the input layer, 6 neurons in the hidden layer and 1 neuron in the output layer
-			var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
+			//var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
+			var newUnit = new synaptic.Architect.Perceptron(2, 2, 1);
 			
 			// set additional parameters for the new unit
 			newUnit.index = i;
@@ -74,31 +75,41 @@ GeneticAlgorithm.prototype = {
 			// If the best unit from the initial population has a negative fitness 
 			// then it means there is no any bird which reached the first barrier!
 			// Playing as the God, we can destroy this bad population and try with another one.
+			// 如果没有任何bird抵达第一颗树，我们不需要继承任何鸟，这是一个坏的随机生成鸟序列，just重新洗牌，重置神经网络！
+			// 所以我们建议将第一棵树的左侧距离鸟的距离和两棵树的间隔一致，以便降低重新洗牌的概率！
 			this.createPopulation();
 		} else {
 			this.mutateRate = 0.2; // else set the mutatation rate to the real value
+			//mutateRate越大，导致变异就越大！子代和父代差异就打；
 		}
 			
 		// fill the rest of the next population with new units using crossover and mutation
+		// 此处循环，跳过winner，只修订（生成）子代6个！
 		for (var i=this.top_units; i<this.max_units; i++){
 			var parentA, parentB, offspring;
 				
 			if (i == this.top_units){
+				// 子代生成策略1：继承两个最好的父代；（只生成1个）
 				// offspring is made by a crossover of two best winners
 				parentA = Winners[0].toJSON();
 				parentB = Winners[1].toJSON();
 				offspring = this.crossOver(parentA, parentB);
 
 			} else if (i < this.max_units-2){
+				// 子代生成策略2：继承两个随机的winner（包含最好的父代）；（只生成6-2=4个）
 				// offspring is made by a crossover of two random winners
 				parentA = this.getRandomUnit(Winners).toJSON();
 				parentB = this.getRandomUnit(Winners).toJSON();
 				offspring = this.crossOver(parentA, parentB);
 				
 			} else {
+			    // 子代生成策略3：继承两个最好的父代；（只生成1个）
 				// offspring is a random winner
 				offspring = this.getRandomUnit(Winners).toJSON();
 			}
+
+            //父代：总10个，最终全死，去winner4个，其他loser丢弃他们的基因或神经网络模型（w+bias）
+            //子代：总10个，直接原封不动取上次父代的winner4个，再通过4个winner生成6个（策略1有1个；策略2有4个；策略3有1个）
 
 			// mutate the offspring
 			offspring = this.mutation(offspring);
@@ -128,6 +139,7 @@ GeneticAlgorithm.prototype = {
 	},
 
 	// selects the best units from the current population
+	// 排队所有的鸟并返回最好的winner几个！
 	selection : function(){
 		// sort the units of the current population	in descending order by their fitness
 		var sortedPopulation = this.Population.sort(
@@ -146,6 +158,7 @@ GeneticAlgorithm.prototype = {
 	// performs a single point crossover between two parents
 	crossOver : function(parentA, parentB) {
 		// get a cross over cutting point
+		//选择分割点，目前是10选4；
 		var cutPoint = this.random(0, parentA.neurons.length-1);
 		
 		// swap 'bias' information between both parents:

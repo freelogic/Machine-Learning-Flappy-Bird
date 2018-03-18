@@ -21,3 +21,10 @@
   "G:\wamp64\www>mklink /J flappy2 D:\tmp\python\Machine-Learning-Flappy-Bird\source"
   "为 flappy2 <<===>> D:\tmp\python\Machine-Learning-Flappy-Bird\source 创建的联接"
   ```
+  
+  
+  
+  ## TODO
+  * 1.增加按钮能RUNTIME来控制参数（鸟的水平飞行速度，垂直flappy煽动翅膀速度，两树上下间距，左右间距；
+  * 2.用多维属性系来代替神经网络；
+  * 3.遗传算法是否能加上性别？

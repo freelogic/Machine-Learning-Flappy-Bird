@@ -21,7 +21,17 @@ App.Main = function(game){
 	this.STATE_PLAY = 3;
 	this.STATE_GAMEOVER = 4;
 	
-	this.BARRIER_DISTANCE = 300;
+	//this.BARRIER_DISTANCE = 300;  //左右两棵树之间的距离，源程序默认值是300；
+	this.BARRIER_DISTANCE = 200;
+	this.BARRIER_FIRST_DISTANCE = this.BARRIER_DISTANCE; //每次重新启动后，左边第一颗树距离屏幕最左端鸟儿触发的距离；
+	//讨论及测试结论：
+	//如果将BARRIER_FIRST_DISTANCE设为原来的700，远大于两颗树之间的距离200，则会让上次成功的鸟（原始算法是4个）很容易再下次情况下失败！
+	//因为开始这700是INPUT1，而且仅在restart的情况下才有，强化学习一遍遍的retry，它占的比重少，情况只在restart后几秒出现，不容易学习！
+	//而如果将这个参数调节为和之后所有的两棵树水平间距相同，也就是等于有利于将上期的优势鸟，更容易保留到下期依然为优势鸟，因为它可以不用在
+	//RESTART之后这个INPUT1和平时飞行不太一样的而且出现情况少的无法很好学习的这段RESTART时间内就随机的死掉！
+	//结论：BARRIER_FIRST_DISTANCE和BARRIER_DISTANCE，差异越小，更有利于成功鸟的继承和保活，分数就更快更高！
+	//详见“genetic.js”中函数“evolvePopulation”的解释；
+
 
 }
 
@@ -158,7 +168,8 @@ App.Main.prototype = {
 				
 				// reset barriers
 				this.BarrierGroup.forEach(function(barrier){
-					barrier.restart(700 + barrier.index * this.BARRIER_DISTANCE);
+					//barrier.restart(700 + barrier.index * this.BARRIER_DISTANCE);
+					barrier.restart(this.BARRIER_FIRST_DISTANCE + barrier.index * this.BARRIER_DISTANCE);
 				}, this);
 				
 				// define pointer to the first barrier
@@ -325,8 +336,8 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 250; //上下两棵树之间的距离GAP
-	this.V_BIRD_FLY = -400; //BIRD水平飞行的速度;
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 150; //上下两棵树之间的(垂直)距离GAP
+	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
@@ -392,7 +403,7 @@ var Bird = function(game, x, y, index) {
 	this.game.physics.arcade.enableBody(this);
 
 	//CC: additional parameters
-	this.V_BIRD_FLAPPY = -500; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.V_BIRD_FLAPPY = -400; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
