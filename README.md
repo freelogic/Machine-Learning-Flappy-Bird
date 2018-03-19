@@ -28,6 +28,7 @@
   * 1.增加按钮能RUNTIME来控制参数（鸟的水平飞行速度，垂直flappy煽动翅膀速度，两树上下间距，左右间距；
   * 2.用多维属性系来代替神经网络；
   * 3.遗传算法是否能加上性别？
+  * 4.将本例子的synaptic更换为其他JS来测试；比如支持GPU的JS库，比如：kerasjs，brain.js，Sukiyaki2; 不支持GPU的经典库convnet.js；
   
   
   
@@ -44,6 +45,9 @@
   * [synaptic](https://github.com/cazala/synaptic/),可惜它暂时不支持GPU，且正在起草准备开发[synaptic2.0](https://github.com/cazala/synaptic/issues/140);
       * 它论坛中提到的GPU问题：请在[synaptic#issue140](ttps://github.com/cazala/synaptic/issues/140)查“GPU”关键字；
   * [Sukiyaki2](https://github.com/mil-tokyo/sukiyaki2),tokyo东京大学的库，据说支持GPU；
+  * [convnetjs](https://cs.stanford.edu/people/karpathy/convnetjs/),斯坦福的JS机器学习库，no GPU；
+  * [KerasJS](https://github.com/transcranial/keras-js);支持GPU（使用WebGL得到GPU支持）
+  * [brain.js](https://github.com/BrainJS/brain.js/);支持GPU
   * TODO：待补充
 
 
