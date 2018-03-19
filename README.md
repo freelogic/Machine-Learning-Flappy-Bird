@@ -1,6 +1,6 @@
 # README
 
-## 说明
+## 1. 说明
 
 * Install&Debug：
   * 原作者（SRDJAN）网页上的安装摘要：
@@ -24,7 +24,29 @@
   
   
   
-  ## TODO
+## 2. TODO
   * 1.增加按钮能RUNTIME来控制参数（鸟的水平飞行速度，垂直flappy煽动翅膀速度，两树上下间距，左右间距；
   * 2.用多维属性系来代替神经网络；
   * 3.遗传算法是否能加上性别？
+  
+  
+  
+## 3. 资料
+* JS下的GPU库：
+  * [gpu.js](http://gpu.rocks/)和[源码](https://github.com/gpujs/gpu.js);
+  * [weblas](https://github.com/waylonflinn/weblas)和基于它的[webnn](https://github.com/freelogic/webnn)，它较为简陋，不建议看；
+  * project [MILJS](https://github.com/mil-tokyo) which is backed by academic research from the University of **Tokyo** have a few open source libraries:
+      * [Sushi2](https://github.com/mil-tokyo/sushi2): Matrix calculations in JS using GPU
+      * [Sukiyaki2](https://github.com/mil-tokyo/sukiyaki2): Deep Learning library on top of Sushi2,and [API](https://mil-tokyo.github.io/sukiyaki2/api/)
+      * See [demo](https://mil-tokyo.github.io/sukiyaki2/)(第二个camera的demo最佳用firefox在PC/安卓手机上打开，但不支持IPHONE) of a DL network on the MNIST dataset
+      * [Sashimi](https://github.com/mil-tokyo/sashimi): a distributed calculation framework for Javascript
+* JS下的ML机器学习库：
+  * [synaptic](https://github.com/cazala/synaptic/),可惜它暂时不支持GPU，且正在起草准备开发[synaptic2.0](https://github.com/cazala/synaptic/issues/140);
+      * 它论坛中提到的GPU问题：请在[synaptic#issue140](ttps://github.com/cazala/synaptic/issues/140)查“GPU”关键字；
+  * [Sukiyaki2](https://github.com/mil-tokyo/sukiyaki2),tokyo东京大学的库，据说支持GPU；
+  * TODO：待补充
+
+
+
+
+## END
