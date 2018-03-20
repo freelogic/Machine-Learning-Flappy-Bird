@@ -338,7 +338,7 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 100; //上下两棵树之间的(垂直)距离GAP
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 130; //上下两棵树之间的(垂直)距离GAP
 	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
 	this.TREE_HEIGHT_RATIO_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
 	this.TREE_START_Y_FACTOR = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
@@ -411,7 +411,7 @@ var Bird = function(game, x, y, index) {
 	this.game.physics.arcade.enableBody(this);
 
 	//CC: additional parameters
-	this.V_BIRD_FLAPPY = -750; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.V_BIRD_FLAPPY = -400; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
