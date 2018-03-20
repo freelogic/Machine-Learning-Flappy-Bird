@@ -11,8 +11,6 @@ var GeneticAlgorithm = function(max_units, top_units){
 	this.Population = []; // array of all units in current population
 	
 	this.SCALE_FACTOR = 200; // the factor used to scale normalized input values
-	this.SCALE_FACTOR_HEIGHT = this.SCALE_FACTOR/10; // the factor used to scale normalized input values
-	this.SCALE_FACTOR_WIDTH = this.SCALE_FACTOR/2; // the factor used to scale normalized input values
 
 	this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG=0;
 	this.GA_TYPE_RANDOM_THRESHOLD=1;
@@ -25,8 +23,7 @@ GeneticAlgorithm.prototype = {
 	// resets genetic algorithm parameters
 	reset : function(){
 		this.iteration = 1;	// current iteration number (it is equal to the current population number)
-		//this.mutateRate = 1; // initial mutation rate
-		this.mutateRate  =this.GA_RANDOM_THRESHOLD;
+		this.mutateRate = 1; // initial mutation rate
 		
 		this.best_population = 0; // the population number of the best unit
 		this.best_fitness = 0;  // the fitness of the best unit
@@ -41,12 +38,7 @@ GeneticAlgorithm.prototype = {
 		for (var i=0; i<this.max_units; i++){
 			// create a new unit by generating a random Synaptic neural network
 			// with 2 neurons in the input layer, 6 neurons in the hidden layer and 1 neuron in the output layer
-
-			//经测试可以，但是比Perceptron(2, 6, 1)更慢才能进入稳定状态，因为2个隐藏层，变异算法容易破坏当前基因；
-			//一般经过迭代到30-40次左右进入稳定进化；而（2,6,1）只要10次迭代就进入稳定进化了；
-			var newUnit = new synaptic.Architect.Perceptron(2, 12, 6, 1);
-
-			//var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
+			var newUnit = new synaptic.Architect.Perceptron(2, 12, 1);
 			//超过1个hidden layer不行，因为这类的遗传算法是简单的对神经元的bias的截距做交换，
 			//并对weight/bias做随机调整，但因为截距是格式如：neurons[i]['bias']，如果是多个隐藏层，
 			//将导致前后颠倒等毫不合理的遗传，破坏性太大；导致无法强化学习和继承优势！
@@ -68,12 +60,10 @@ GeneticAlgorithm.prototype = {
 	// to calculate an output action according to the inputs
 	activateBrain : function(bird, target){		
 		// input 1: the horizontal distance between the bird and the target
-		//var targetDeltaX = this.normalize(target.x, 700) * this.SCALE_FACTOR;
-		var targetDeltaX = this.normalize(target.x, 700) * this.SCALE_FACTOR_HEIGHT;
+		var targetDeltaX = this.normalize(target.x, 700) * this.SCALE_FACTOR;
 		
 		// input 2: the height difference between the bird and the target
-		//var targetDeltaY = this.normalize(bird.y - target.y, 800) * this.SCALE_FACTOR;
-		var targetDeltaY = this.normalize(bird.y - target.y, 800) * this.SCALE_FACTOR_WIDTH;
+		var targetDeltaY = this.normalize(bird.y - target.y, 800) * this.SCALE_FACTOR;
 	
 		// create an array of all inputs
 		var inputs = [targetDeltaX, targetDeltaY];
@@ -84,7 +74,84 @@ GeneticAlgorithm.prototype = {
 		// perform flap if output is greater than 0.5
 		if (outputs[0] > 0.5) bird.flap();
 	},
-	
+
+	// evolves the population by performing selection, crossover and mutations on the units
+	evolvePopulation_old : function(){
+		// select the top units of the current population to get an array of winners
+		// (they will be copied to the next population)
+		var Winners = this.selection();
+
+		if (this.mutateRate == 1 && Winners[0].fitness < 0){
+			// If the best unit from the initial population has a negative fitness
+			// then it means there is no any bird which reached the first barrier!
+			// Playing as the God, we can destroy this bad population and try with another one.
+			// 如果没有任何bird抵达第一颗树，我们不需要继承任何鸟，这是一个坏的随机生成鸟序列，just重新洗牌，重置神经网络！
+			// 所以我们建议将第一棵树的左侧距离鸟的距离和两棵树的间隔一致，以便降低重新洗牌的概率！
+			this.createPopulation();
+		} else {
+			this.mutateRate = 0.2; // else set the mutatation rate to the real value
+			//mutateRate越大，导致变异就越大！子代和父代差异就打；
+		}
+
+		// fill the rest of the next population with new units using crossover and mutation
+		// 此处循环，跳过winner，只修订（生成）子代6个！
+		for (var i=this.top_units; i<this.max_units; i++){
+			var parentA, parentB, offspring;
+
+			if (i == this.top_units){
+				// 子代生成策略1：继承两个最好的父代；（只生成1个）
+				// offspring is made by a crossover of two best winners
+				parentA = Winners[0].toJSON();
+				parentB = Winners[1].toJSON();
+				//offspring = this.crossOver(parentA, parentB);
+				offspring = this.crossOverByMutated(this.getRandomUnit(Winners).toJSON(),0.1);
+
+			} else if (i < this.max_units-2){
+				// 子代生成策略2：继承两个随机的winner（包含最好的父代）；（只生成6-2=4个）
+				// offspring is made by a crossover of two random winners
+				parentA = this.getRandomUnit(Winners).toJSON();
+				parentB = this.getRandomUnit(Winners).toJSON();
+				//offspring = this.crossOver(parentA, parentB);
+				offspring = this.crossOverByMutated(this.getRandomUnit(Winners).toJSON(),0.1);
+
+			} else {
+			    // 子代生成策略3：继承两个最好的父代；（只生成1个）
+				// offspring is a random winner
+				// offspring = this.getRandomUnit(Winners).toJSON();
+				offspring = this.crossOverByMutated(this.getRandomUnit(Winners).toJSON(),0.1);
+			}
+
+            //父代：总10个，最终全死，去winner4个，其他loser丢弃他们的基因或神经网络模型（w+bias）
+            //子代：总10个，直接原封不动取上次父代的winner4个，再通过4个winner生成6个（策略1有1个；策略2有4个；策略3有1个）
+
+			// mutate the offspring
+			offspring = this.mutation(offspring);
+
+			// create a new unit using the neural network from the offspring
+			var newUnit = synaptic.Network.fromJSON(offspring);
+			newUnit.index = this.Population[i].index;
+			newUnit.fitness = 0;
+			newUnit.score = 0;
+			newUnit.isWinner = false;
+
+			// update population by changing the old unit with the new one
+			this.Population[i] = newUnit;
+		}
+
+		// if the top winner has the best fitness in the history, store its achievement!
+		if (Winners[0].fitness > this.best_fitness){
+			this.best_population = this.iteration;
+			this.best_fitness = Winners[0].fitness;
+			this.best_score = Winners[0].score;
+		}
+
+		// sort the units of the new population	in ascending order by their index
+		this.Population.sort(function(unitA, unitB){
+			return unitA.index - unitB.index;
+		});
+	},
+
+
 	// evolves the population by performing selection, crossover and mutations on the units
 	evolvePopulation : function(){
 	    var Winners = this.selection();
@@ -96,7 +163,7 @@ GeneticAlgorithm.prototype = {
 		}
 
 		this.genetic_algorithm(this.GA_TYPE_RANDOM_THRESHOLD);
-        //this.genetic_algorithm(this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG);
+        //genetic_algorithm(this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG);
 
 		// 子代排序
 		this.Population.sort(function(unitA, unitB){
@@ -258,18 +325,18 @@ GeneticAlgorithm.prototype = {
 	//用经典的遗传算法，增加变异因子GENE_MUTATED_RATIO=0.1
 	crossOverByMutated : function(parent, geneMutatedRatio) {
 	    // 定义默认变异因子
+	    var GENE_MUTATED_RATIO=0.3;
 	    var ratio;
 	    if (geneMutatedRatio == "" || geneMutatedRatio == undefined || geneMutatedRatio == null) {
-	      ratio = this.GA_RANDOM_THRESHOLD;
+	      ratio = GENE_MUTATED_RATIO;
 	    } else {
 	      ratio = geneMutatedRatio;
 	    }
 
 		//随机归零（变异）一定概率的神经元；
 		for (var i = 0; i < parent.neurons.length; i++){
-		    //INPUT/OUTPUT神经元不需要变异；
-			if (Math.random() < ratio && parent.neurons[i].layer != "input" && parent.neurons[i].layer != "output") {
-			    parent.neurons[i]['bias'] = 0;
+			if (Math.random() < ratio ) {
+			    parent.neurons[i]['bias'] = 1;
 			}
 		}
 		return parent;

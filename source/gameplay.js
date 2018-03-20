@@ -23,7 +23,7 @@ App.Main = function(game){
 	
 	//this.BARRIER_DISTANCE = 300;  //左右两棵树之间的距离，源程序默认值是300；
 	this.BARRIER_DISTANCE = 200;
-	this.BARRIER_FIRST_DISTANCE = this.BARRIER_DISTANCE; //每次重新启动后，左边第一颗树距离屏幕最左端鸟儿触发的距离；
+	this.BARRIER_FIRST_DISTANCE = this.BARRIER_DISTANCE * 2; //每次重新启动后，左边第一颗树距离屏幕最左端鸟儿触发的距离；
 	//讨论及测试结论：
 	//如果将BARRIER_FIRST_DISTANCE设为原来的700，远大于两颗树之间的距离200，则会让上次成功的鸟（原始算法是4个）很容易再下次情况下失败！
 	//因为开始这700是INPUT1，而且仅在restart的情况下才有，强化学习一遍遍的retry，它占的比重少，情况只在restart后几秒出现，不容易学习！
@@ -69,6 +69,7 @@ App.Main.prototype = {
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		// set the gravity of the world
+		// todo: 怎么计算？尺度和鸟的-600往上飞是一致的？
 		this.game.physics.arcade.gravity.y = 1300; //设定游戏世界的重力因子(效果)
 		
 		// create a new Genetic Algorithm with a population of 10 units which will be evolving by using 4 top units
@@ -206,7 +207,7 @@ App.Main.prototype = {
 				
 				this.BirdGroup.forEachAlive(function(bird){
 					// calculate the current fitness and the score for this bird
-					//TODO：待研究
+					//鸟的判决函数（fitness）=总距离-鸟到目标点的距离，就是当前的fitness，越大越好；
 					bird.fitness_curr = this.distance - this.game.physics.arcade.distanceBetween(bird, this.TargetPoint);
 					bird.score_curr = this.score;
 					
@@ -216,7 +217,7 @@ App.Main.prototype = {
 					
 					if (bird.alive){
 						// check if a bird passed through the gap of the target barrier
-						// 只要有一个bird超越了目标点(上下树的中点)就设定下一个目标点
+						// 只要有一个bird超越了目标点(上下树的中点)就设定下一个目标点RES
 						if (bird.x > this.TargetPoint.x) isNextTarget = true;
 						
 						// check if a bird flies out of vertical bounds
@@ -236,7 +237,8 @@ App.Main.prototype = {
 				}
 				
 				// if the first barrier went out of the left bound then restart it on the right side
-				//TODO：待研究 （循环用树？）
+				// 循环用树：当第一颗树移出左边界（屏幕），宽度为负的一棵树宽度，就表示完全移出了屏幕；
+				// 则将其节点添加到最后一棵树的右边并间隔一个barrier_distance的距离；
 				if (this.firstBarrier.getWorldX() < -this.firstBarrier.width){
 					this.firstBarrier.restart(this.lastBarrier.getWorldX() + this.BARRIER_DISTANCE);
 					
@@ -336,8 +338,10 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 150; //上下两棵树之间的(垂直)距离GAP
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 100; //上下两棵树之间的(垂直)距离GAP
 	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
+	this.TREE_HEIGHT_RATIO_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
+	this.TREE_START_Y_FACTOR = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
@@ -349,7 +353,11 @@ TreeGroup.prototype.restart = function(x) {
 	this.bottomTree.reset(0, this.topTree.height + this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE);
 
 	this.x = x;
-	this.y = this.game.rnd.integerInRange(110-this.topTree.height, -20);
+	//这里控制一排树（上下两颗加上中间间隔）的显示顶部位置，从而也会影响中间给bird飞过的间隙的上下y位置；
+	//this.y = this.game.rnd.integerInRange(110-this.topTree.height, -20);
+
+	//如下定义了一个倍率因子，让一排树的y最高点起点产生的范围[min,max]是TREE的多少倍？tree=400像素；
+	this.y = this.game.rnd.integerInRange(0 - this.topTree.height * this.TREE_HEIGHT_RATIO_FACTOR+this.TREE_START_Y_FACTOR, 0+this.TREE_START_Y_FACTOR);
 
 	//this.setAll('body.velocity.x', -200); //velocity：速率
 	this.setAll('body.velocity.x', this.V_BIRD_FLY); //velocity：飞鸟(或称“移屏”)速率，太快将无法学习到收敛和始终成功，因为可能物理上飞行无法适应突变，翅膀太慢！
@@ -403,7 +411,7 @@ var Bird = function(game, x, y, index) {
 	this.game.physics.arcade.enableBody(this);
 
 	//CC: additional parameters
-	this.V_BIRD_FLAPPY = -400; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.V_BIRD_FLAPPY = -750; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
