@@ -1,4 +1,16 @@
 /***********************************************************************************
+/* TOOL
+/***********************************************************************************/
+function isValid(x){
+  if (x == "" || x == undefined || x == null) {
+    return false;
+   }else{
+    return true;
+   }
+};
+
+
+/***********************************************************************************
 /* Create a new Phaser Game on window load
 /***********************************************************************************/
 
@@ -46,6 +58,9 @@ App.Main.prototype = {
 		this.game.load.image('imgGround', 'assets/img_ground.png');
 		this.game.load.image('imgPause', 'assets/img_pause.png');
 		this.game.load.image('imgLogo', 'assets/img_logo.png');
+		this.game.load.image('imgPlus', 'assets/img_plus.png');
+		this.game.load.image('imgMinus', 'assets/img_minus.png');
+
 		//按照框架要求，提供了font字体文件及背景，供逻辑使用；
 		this.load.bitmapFont('fnt_chars_black', 'assets/fnt_chars_black.png', 'assets/fnt_chars_black.fnt');
 		this.load.bitmapFont('fnt_digits_blue', 'assets/fnt_digits_blue.png', 'assets/fnt_digits_blue.fnt');
@@ -132,6 +147,8 @@ App.Main.prototype = {
 		this.btnMore = this.game.add.button(1040, 620, 'imgButtons', this.onMoreGamesClick, this, 2, 2);
 		this.btnPause = this.game.add.button(1160, 620, 'imgButtons', this.onPauseClick, this, 1, 1);
 		this.btnLogo = this.game.add.button(910, 680, 'imgLogo', this.onMoreGamesClick, this);
+		this.btnTreeMiddleGapIncrease = this.game.add.button(920, 660, 'imgPlus', this.onTreeMiddleGapIncrease, this);
+		this.btnTreeMiddleGapDecrease = this.game.add.button(940, 660, 'imgMinus', this.onTreeMiddleGapDecrease, this);
 		
 		// create game paused info
 		this.sprPause = this.game.add.sprite(455, 360, 'imgPause');
@@ -319,7 +336,31 @@ App.Main.prototype = {
 			this.btnPause.input.enabled = true;
 			this.sprPause.kill();
 		}
-    }
+    },
+
+    //runtime加大上下两树间隔GAP
+    onTreeMiddleGapIncrease : function(){
+        //alert("clicked!");
+		// reset barriers(tree) TreeMiddleGap
+		this.BarrierGroup.forEach(function(barrier){
+			barrier.setTreeMiddleGap(5);
+		}, this);
+	},
+	//runtime减小上下两树间隔GAP
+    onTreeMiddleGapDecrease : function(){
+        //alert("clicked!");
+		// reset barriers(tree) TreeMiddleGap
+		this.BarrierGroup.forEach(function(barrier){
+			barrier.setTreeMiddleGap(-5);
+		}, this);
+	},
+
+	onTreeHorizontalGapIncrease : function(){
+	},
+
+	onTreeHorizontalGapDecrease : function(){
+	},
+
 }
 
 /***********************************************************************************
@@ -338,7 +379,7 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 130; //上下两棵树之间的(垂直)距离GAP
+	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 150; //上下两棵树之间的(垂直)距离GAP
 	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
 	this.TREE_HEIGHT_RATIO_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
 	this.TREE_START_Y_FACTOR = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
@@ -346,6 +387,29 @@ var TreeGroup = function(game, parent, index){
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
 TreeGroup.prototype.constructor = TreeGroup;
+
+TreeGroup.prototype.setTreeMiddleGap = function(x) {
+    var  ret = isValid(x);
+    if (ret == false) {
+        window.alert("input X is NOT valid!");
+        return;
+    }else if (this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE>300 && x >0) {
+        window.alert("上下两棵树的间距太大(>300)!设置无效！");
+        return;
+    }else if (this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE<100 && x <0) {
+        window.alert("上下两棵树的间距太小(<100)!设置无效！");
+        return;
+    }else if (x<-5 || x>5){
+        window.alert("x超范围(x<1 or x>5)!设置无效！");
+        return;
+    }else {
+        this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE +x;
+        return;
+    };
+};
+TreeGroup.prototype.getTreeMiddleGap = function() {
+    return this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE;
+};
 
 TreeGroup.prototype.restart = function(x) {
 	this.topTree.reset(0, 0);

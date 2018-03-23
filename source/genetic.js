@@ -14,8 +14,8 @@ var GeneticAlgorithm = function(max_units, top_units){
 	this.SCALE_FACTOR_HEIGHT = this.SCALE_FACTOR/10; // the factor used to scale normalized input values
 	this.SCALE_FACTOR_WIDTH = this.SCALE_FACTOR/2; // the factor used to scale normalized input values
 
-	this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG=0;
-	this.GA_TYPE_RANDOM_THRESHOLD=1;
+	this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
+	this.GA_TYPE_MUTATION=1;
 	this.GA_RANDOM_THRESHOLD=0.3;
 	this.GA_RANDOM_THRESHOLD_FOR_Perceptron_bias=this.GA_RANDOM_THRESHOLD;
 	this.GA_RANDOM_THRESHOLD_FOR_Perceptron_weight=this.GA_RANDOM_THRESHOLD;
@@ -44,9 +44,9 @@ GeneticAlgorithm.prototype = {
 
 			//经测试可以，但是比Perceptron(2, 6, 1)更慢才能进入稳定状态，因为2个隐藏层，变异算法容易破坏当前基因；
 			//一般经过迭代到30-40次左右进入稳定进化；而（2,6,1）只要10次迭代就进入稳定进化了；
-			var newUnit = new synaptic.Architect.Perceptron(2, 12, 6, 1);
+			//var newUnit = new synaptic.Architect.Perceptron(2, 12, 6, 1);
 
-			//var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
+			var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
 			//超过1个hidden layer不行，因为这类的遗传算法是简单的对神经元的bias的截距做交换，
 			//并对weight/bias做随机调整，但因为截距是格式如：neurons[i]['bias']，如果是多个隐藏层，
 			//将导致前后颠倒等毫不合理的遗传，破坏性太大；导致无法强化学习和继承优势！
@@ -95,8 +95,8 @@ GeneticAlgorithm.prototype = {
 			this.best_score = Winners[0].score;
 		}
 
-		this.genetic_algorithm(this.GA_TYPE_RANDOM_THRESHOLD);
-        //this.genetic_algorithm(this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG);
+		this.genetic_algorithm(this.GA_TYPE_MUTATION);
+        //this.genetic_algorithm(this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG);
 
 		// 子代排序
 		this.Population.sort(function(unitA, unitB){
@@ -187,21 +187,21 @@ GeneticAlgorithm.prototype = {
 	//遗传算法（选择器）
     genetic_algorithm : function(gaType) {
         //定义默认遗传算法的类型常量；
-        //var GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG=0;
-	    //var GA_TYPE_RANDOM_THRESHOLD=1;
+        //var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
+	    //var GA_TYPE_MUTATION=1;
 
 	    var gatype;
 	    if (gaType == "" || gaType == undefined || gaType == null) {
-	      gatype = this.GA_TYPE_RANDOM_THRESHOLD; //默认为随机变异算法
+	      gatype = this.GA_TYPE_MUTATION; //默认为随机变异算法
 	    } else {
 	      gatype = gaType;
 	    }
         //根据类型来处理遗传算法具体的子代继承处理；
 	    switch(gatype) {
-            case this.GA_TYPE_RANDOM_THRESHOLD:
+            case this.GA_TYPE_MUTATION:
                 this.ga_by_random_threshold();
                 break;
-            case this.GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG:
+            case this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG:
                 this.ga_orig();
                 break;
             default:
@@ -211,7 +211,7 @@ GeneticAlgorithm.prototype = {
 
 
 	//遗传算法（选择器）
-	//var GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG=0;
+	//var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
     ga_orig : function() {
         var Winners = this.selection();
     	// fill the rest of the next population with new units using crossover and mutation
@@ -276,7 +276,7 @@ GeneticAlgorithm.prototype = {
 	},
 
     //遗传算法（选择器）
-	//var GA_TYPE_ONLY_SUPPORT_1_HIDDEN_LAYER_ORIG=0;
+	//var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
     ga_by_random_threshold : function() {
         var Winners = this.selection();
 		for (var i=this.top_units; i<this.max_units; i++){
