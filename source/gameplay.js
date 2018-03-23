@@ -1,14 +1,15 @@
 /***********************************************************************************
 /* TOOL
 /***********************************************************************************/
-function isValid(x){
-  if (x == "" || x == undefined || x == null) {
-    return false;
-   }else{
-    return true;
-   }
-};
+//function isValid2(x){
+//  if (x == "" || x == undefined || x == null) {
+//    return false;
+//   }else{
+//    return true;
+//   }
+//};
 
+document.write('<script src="./cctool.js" type="text/javascript" ></script>');
 
 /***********************************************************************************
 /* Create a new Phaser Game on window load
@@ -143,13 +144,28 @@ App.Main.prototype = {
 		this.txtBestUnit = new Text(this.game, 1095, 580, "", "center", "fnt_chars_black");
 		
 		// create buttons
-		this.btnRestart = this.game.add.button(920, 620, 'imgButtons', this.onRestartClick, this, 0, 0);
-		this.btnMore = this.game.add.button(1040, 620, 'imgButtons', this.onMoreGamesClick, this, 2, 2);
-		this.btnPause = this.game.add.button(1160, 620, 'imgButtons', this.onPauseClick, this, 1, 1);
-		this.btnLogo = this.game.add.button(910, 680, 'imgLogo', this.onMoreGamesClick, this);
-		this.btnTreeMiddleGapIncrease = this.game.add.button(920, 660, 'imgPlus', this.onTreeMiddleGapIncrease, this);
-		this.btnTreeMiddleGapDecrease = this.game.add.button(940, 660, 'imgMinus', this.onTreeMiddleGapDecrease, this);
-		
+		this.btnRestart = this.game.add.button(920, 595, 'imgButtons', this.onRestartClick, this, 0, 0);
+		this.btnMore = this.game.add.button(1040, 595, 'imgButtons', this.onMoreGamesClick, this, 2, 2);
+		this.btnPause = this.game.add.button(1160, 595, 'imgButtons', this.onPauseClick, this, 1, 1);
+		this.btnLogo = this.game.add.button(910, 690, 'imgLogo', this.onMoreGamesClick, this);
+
+		// 增加实时环境调控控制按钮
+		new TextWithFontSize(this.game, 1000, 655, "TreeVerticalGAP:\nTreeHorizontalGAP:\nAdjacentTreeVerticalDifference:","right","fnt_chars_black","10");
+		this.btnTreeVerticalGapIncrease = this.game.add.button(1005, 655, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnTreeVerticalGapDecrease = this.game.add.button(1020, 655, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+		this.btnTreeHorizontalGapIncrease = this.game.add.button(1005, 665, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnTreeHorizontalGapDecrease = this.game.add.button(1020, 665, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1005, 675, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1020, 675, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+
+		new TextWithFontSize(this.game, 1150, 655, "BirdHorizontalSpeed:\nBirdFlappySpeed:\nGameEngineGravity","right","fnt_chars_black","10");
+		this.btnTreeVerticalGapIncrease = this.game.add.button(1155, 655, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnTreeVerticalGapDecrease = this.game.add.button(1170, 655, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+		this.btnTreeHorizontalGapIncrease = this.game.add.button(1155, 665, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnTreeHorizontalGapDecrease = this.game.add.button(1170, 665, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1155, 675, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1170, 675, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+
 		// create game paused info
 		this.sprPause = this.game.add.sprite(455, 360, 'imgPause');
 		this.sprPause.anchor.setTo(0.5);
@@ -339,7 +355,7 @@ App.Main.prototype = {
     },
 
     //runtime加大上下两树间隔GAP
-    onTreeMiddleGapIncrease : function(){
+    onTreeVerticalGapIncrease : function(){
         //alert("clicked!");
 		// reset barriers(tree) TreeMiddleGap
 		this.BarrierGroup.forEach(function(barrier){
@@ -347,11 +363,11 @@ App.Main.prototype = {
 		}, this);
 	},
 	//runtime减小上下两树间隔GAP
-    onTreeMiddleGapDecrease : function(){
+    onTreeVerticalGapDecrease : function(){
         //alert("clicked!");
 		// reset barriers(tree) TreeMiddleGap
 		this.BarrierGroup.forEach(function(barrier){
-			barrier.setTreeMiddleGap(-5);
+			barrier.setTreeVerticalGap(-5);
 		}, this);
 	},
 
@@ -388,7 +404,7 @@ var TreeGroup = function(game, parent, index){
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
 TreeGroup.prototype.constructor = TreeGroup;
 
-TreeGroup.prototype.setTreeMiddleGap = function(x) {
+TreeGroup.prototype.setTreeVerticalGap = function(x) {
     var  ret = isValid(x);
     if (ret == false) {
         window.alert("input X is NOT valid!");
@@ -407,7 +423,7 @@ TreeGroup.prototype.setTreeMiddleGap = function(x) {
         return;
     };
 };
-TreeGroup.prototype.getTreeMiddleGap = function() {
+TreeGroup.prototype.getTreeVerticalGap = function() {
     return this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE;
 };
 
@@ -506,14 +522,30 @@ Bird.prototype.death = function(){
 /* Text Class extends Phaser.BitmapText
 /***********************************************************************************/
 
-var Text = function(game, x, y, text, align, font){
-	Phaser.BitmapText.call(this, game, x, y, font, text, 16);
-	
+//var Text = function(game, x, y, text, align, font){
+//	Phaser.BitmapText.call(this, game, x, y, font, text, 16);
+var TextWithFontSize = function(game, x, y, text, align, font, fontSize){
+	Phaser.BitmapText.call(this, game, x, y, font, text, fontSize);
+
 	this.align = align;
 	
 	if (align == "right") this.anchor.setTo(1, 0);
 	else this.anchor.setTo(0.5);
 	
+	this.game.add.existing(this);
+};
+
+TextWithFontSize.prototype = Object.create(Phaser.BitmapText.prototype);
+TextWithFontSize.prototype.constructor = Text;
+
+var Text = function(game, x, y, text, align, font){
+	Phaser.BitmapText.call(this, game, x, y, font, text, 16);
+
+	this.align = align;
+
+	if (align == "right") this.anchor.setTo(1, 0);
+	else this.anchor.setTo(0.5);
+
 	this.game.add.existing(this);
 };
 
