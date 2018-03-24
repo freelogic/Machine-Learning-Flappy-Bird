@@ -150,21 +150,35 @@ App.Main.prototype = {
 		this.btnLogo = this.game.add.button(910, 690, 'imgLogo', this.onMoreGamesClick, this);
 
 		// 增加实时环境调控控制按钮
-		new TextWithFontSize(this.game, 1000, 655, "TreeVerticalGAP:\nTreeHorizontalGAP:\nAdjacentTreeVerticalDifference:","right","fnt_chars_black","10");
-		this.btnTreeVerticalGapIncrease = this.game.add.button(1005, 655, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnTreeVerticalGapDecrease = this.game.add.button(1020, 655, 'imgMinus', this.onTreeVerticalGapDecrease, this);
-		this.btnTreeHorizontalGapIncrease = this.game.add.button(1005, 665, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnTreeHorizontalGapDecrease = this.game.add.button(1020, 665, 'imgMinus', this.onTreeVerticalGapDecrease, this);
-		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1005, 675, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1020, 675, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+		new TextWithFontSize(this.game, 1050, 655-10, "TreeVerticalGAP:\nTreeHorizontalGAP:\nAdjacentTreeVerticalDifference:\nTreeWholeShift","right","fnt_chars_black","10");
+		this.txtTreeVerticalGap = new TextWithFontSize(this.game, 1060, 660-10, "0000","left","fnt_digits_red","10");
+		this.btnTreeVerticalGapIncrease = this.game.add.button(1060+15, 655-10, 'imgPlus', this.onTreeVerticalGapIncrease, this);
+		this.btnTreeVerticalGapDecrease = this.game.add.button(1060+25, 655-10, 'imgMinus', this.onTreeVerticalGapDecrease, this);
 
-		new TextWithFontSize(this.game, 1150, 655, "BirdHorizontalSpeed:\nBirdFlappySpeed:\nGameEngineGravity","right","fnt_chars_black","10");
-		this.btnTreeVerticalGapIncrease = this.game.add.button(1155, 655, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnTreeVerticalGapDecrease = this.game.add.button(1170, 655, 'imgMinus', this.onTreeVerticalGapDecrease, this);
-		this.btnTreeHorizontalGapIncrease = this.game.add.button(1155, 665, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnTreeHorizontalGapDecrease = this.game.add.button(1170, 665, 'imgMinus', this.onTreeVerticalGapDecrease, this);
-		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1155, 675, 'imgPlus', this.onTreeVerticalGapIncrease, this);
-		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1170, 675, 'imgMinus', this.onTreeVerticalGapDecrease, this);
+        this.txtTreeHorizontalGap = new TextWithFontSize(this.game, 1060, 672-10, "0000","left","fnt_digits_red","10");
+		this.btnTreeHorizontalGapIncrease = this.game.add.button(1060+15, 665-10, 'imgPlus', this.onTreeHorizontalGapIncrease, this);
+		this.btnTreeHorizontalGapDecrease = this.game.add.button(1060+25, 665-10, 'imgMinus', this.onTreeHorizontalGapDecrease, this);
+         // 上面是相邻两树垂直间隔差异因子；
+        this.txtAdjacentTreeVerticalDifferenceGap = new TextWithFontSize(this.game, 1060, 684-10, "0000","left","fnt_digits_red","10");
+		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1060+15, 675-10, 'imgPlus', this.onAdjacentTreeVerticalDifferenceGapIncrease, this);
+		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1060+25, 675-10, 'imgMinus', this.onAdjacentTreeVerticalDifferenceGapDecrease, this);
+         // 下面是每棵树起始位置参数的增减！来调节所有树的间隔GAP的整体向上或向下偏移！
+        this.txtTreeWholeShift = new TextWithFontSize(this.game, 1060, 696-10, "0000","left","fnt_digits_red","10");
+		this.btnTreeWholeShiftIncrease = this.game.add.button(1060+15, 685-10, 'imgPlus', this.onTreeWholeShiftIncrease, this);
+		this.btnTreeWholeShiftDecrease = this.game.add.button(1060+25, 685-10, 'imgMinus', this.onTreeWholeShiftDecrease, this);
+
+		new TextWithFontSize(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
+        this.txtBirdFlappySpeed = new TextWithFontSize(this.game, 1230, 660-10, "0000","left","fnt_digits_red","10");
+		this.btnBirdFlappySpeedIncrease = this.game.add.button(1230+15, 655-10, 'imgPlus', this.onBirdFlappySpeedIncrease, this);
+		this.btnBirdFlappySpeedDecrease = this.game.add.button(1230+25, 655-10, 'imgMinus', this.onBirdFlappySpeedDecrease, this);
+
+        this.txtBirdHorizontalSpeed = new TextWithFontSize(this.game, 1230, 672-10, "0000","left","fnt_digits_red","10");
+        this.btnBirdHorizontalSpeedIncrease = this.game.add.button(1230+15, 665-10, 'imgPlus', this.onBirdHorizontalSpeedIncrease, this);
+		this.btnBirdHorizontalSpeedDecrease = this.game.add.button(1230+25, 665-10, 'imgMinus', this.onBirdHorizontalSpeedDecrease, this);
+
+        this.txtGameEngineGravity = new TextWithFontSize(this.game, 1230, 684-10, "0000","left","fnt_digits_red","10");
+        this.btnGameEngineGravityIncrease = this.game.add.button(1230+15, 675-10, 'imgPlus', this.onGameEngineGravityIncrease, this);
+		this.btnGameEngineGravityDecrease = this.game.add.button(1230+25, 675-10, 'imgMinus', this.onGameEngineGravityDecrease, this);
 
 		// create game paused info
 		this.sprPause = this.game.add.sprite(455, 360, 'imgPause');
@@ -189,6 +203,7 @@ App.Main.prototype = {
 				
 			case this.STATE_START: // start/restart the game
 				// update text objects
+				this.uep(); //更新环境参数
 				this.txtPopulationPrev.text = "GEN "+(this.GA.iteration-1);
 				this.txtPopulationCurr.text = "GEN "+(this.GA.iteration);
 				
@@ -245,7 +260,8 @@ App.Main.prototype = {
 					bird.score_curr = this.score;
 					
 					// check collision between a bird and the target barrier
-					//TODO：待研究
+					// http://www.phaser.io/docs/2.6.2/Phaser.Physics.Arcade.html#checkCollision
+					// collide(object1, object2, collideCallback, processCallback, callbackContext) → {boolean}
 					this.game.physics.arcade.collide(bird, this.targetBarrier, this.onDeath, null, this);
 					
 					if (bird.alive){
@@ -354,28 +370,46 @@ App.Main.prototype = {
 		}
     },
 
-    //runtime加大上下两树间隔GAP
-    onTreeVerticalGapIncrease : function(){
-        //alert("clicked!");
-		// reset barriers(tree) TreeMiddleGap
-		this.BarrierGroup.forEach(function(barrier){
-			barrier.setTreeMiddleGap(5);
-		}, this);
-	},
-	//runtime减小上下两树间隔GAP
-    onTreeVerticalGapDecrease : function(){
-        //alert("clicked!");
-		// reset barriers(tree) TreeMiddleGap
-		this.BarrierGroup.forEach(function(barrier){
-			barrier.setTreeVerticalGap(-5);
-		}, this);
-	},
+    uep : function(){this.updateEnvironmentParameters();}, // JUST for short name!
+    updateEnvironmentParameters : function(){
+        this.txtTreeVerticalGap.text = this.BarrierGroup.getAt(0).getTreeVerticalGap(); //update：TVG
+        this.txtTreeHorizontalGap.text = this.getTreeHorizontalGap(); //update：THG
+        //this.txtAdjacentTreeVerticalDifference.text = this.BarrierGroup.getAt(0).getAdjacentTreeVerticalDifference(); //update：ATVD
+    },
+    onTreeVerticalGapIncrease : function(){     //runtime加大上下两树间隔GAP
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(5);}, this); this.uep(); },
+    onTreeVerticalGapDecrease : function(){ 	//runtime减小上下两树间隔GAP
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(-5);}, this);this.uep();},
 
-	onTreeHorizontalGapIncrease : function(){
-	},
+    onTreeHorizontalGapIncrease : function(){this.adjustTreeHorizontalGap(5); this.uep();},//runtime加大左右两树间隔GAP
+    onTreeHorizontalGapDecrease : function(){this.adjustTreeHorizontalGap(-5);this.uep();},//runtime减小左右两树间隔GAP
 
-	onTreeHorizontalGapDecrease : function(){
-	},
+    //todo:
+    //runtime降低上下两树间隔GAP出现中心位置
+    //runtime升高上下两树间隔GAP出现中心位置
+
+    //runtime加大左右(相邻)两树间隔GAP的上下差异因子
+    //runtime减小左右(相邻)两树间隔GAP的上下差异因子
+
+    //runtime加大bird平飞(移屏)速度
+    //runtime减小bird平飞(移屏)速度
+
+    //runtime加大bird-flappy垂直飞速度
+    //runtime减小bird-flappy垂直飞速度
+
+    //runtime加大bird不flappy时垂直下落的速度(游戏物理引擎的重力因子)
+    //runtime减小bird不flappy时垂直下落的速度(游戏物理引擎的重力因子)
+
+
+
+//调整“TreeHorizontalGap”就是调整“this.BARRIER_DISTANCE”
+    adjustTreeHorizontalGap : function(x) {
+        var ret1=checkValueInRange(this.BARRIER_DISTANCE+x,400,100,"左右(相邻)两树间距");
+        var ret2=checkValueInRange(x,5,-5,"左右(相邻)间距-增量");
+        if (ret1&&ret2) {this.setTreeHorizontalGap(x);};
+    },
+    setTreeHorizontalGap : function(x) {this.BARRIER_DISTANCE = this.BARRIER_DISTANCE +x;},
+    getTreeHorizontalGap : function() {return this.BARRIER_DISTANCE;},
 
 }
 
@@ -395,7 +429,7 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = 150; //上下两棵树之间的(垂直)距离GAP
+	this.TREE_VERTICAL_GAP = 150; //上下两棵树之间的(垂直)距离GAP
 	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
 	this.TREE_HEIGHT_RATIO_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
 	this.TREE_START_Y_FACTOR = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
@@ -404,33 +438,18 @@ var TreeGroup = function(game, parent, index){
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
 TreeGroup.prototype.constructor = TreeGroup;
 
-TreeGroup.prototype.setTreeVerticalGap = function(x) {
-    var  ret = isValid(x);
-    if (ret == false) {
-        window.alert("input X is NOT valid!");
-        return;
-    }else if (this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE>300 && x >0) {
-        window.alert("上下两棵树的间距太大(>300)!设置无效！");
-        return;
-    }else if (this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE<100 && x <0) {
-        window.alert("上下两棵树的间距太小(<100)!设置无效！");
-        return;
-    }else if (x<-5 || x>5){
-        window.alert("x超范围(x<1 or x>5)!设置无效！");
-        return;
-    }else {
-        this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE = this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE +x;
-        return;
-    };
+TreeGroup.prototype.adjustTreeVerticalGap = function(x) {
+    var ret1=checkValueInRange(this.TREE_VERTICAL_GAP+x,200,100,"上下两树间距");
+    var ret2=checkValueInRange(x,5,-5,"上下两树间距-增量");
+    if (ret1&&ret2) {this.setTreeVerticalGap(x);};
 };
-TreeGroup.prototype.getTreeVerticalGap = function() {
-    return this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE;
-};
+TreeGroup.prototype.setTreeVerticalGap = function(x) {this.TREE_VERTICAL_GAP = this.TREE_VERTICAL_GAP +x;};
+TreeGroup.prototype.getTreeVerticalGap = function() {return this.TREE_VERTICAL_GAP;};
 
 TreeGroup.prototype.restart = function(x) {
 	this.topTree.reset(0, 0);
 	//this.bottomTree.reset(0, this.topTree.height + 130);
-	this.bottomTree.reset(0, this.topTree.height + this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE);
+	this.bottomTree.reset(0, this.topTree.height + this.TREE_VERTICAL_GAP);
 
 	this.x = x;
 	//这里控制一排树（上下两颗加上中间间隔）的显示顶部位置，从而也会影响中间给bird飞过的间隙的上下y位置；
@@ -453,7 +472,7 @@ TreeGroup.prototype.getGapX = function() {
 
 TreeGroup.prototype.getGapY = function() {
 	//return this.bottomTree.world.y - 65;
-	return this.bottomTree.world.y - this.GAP_BETWEEN_TOPTREE_AND_BOTTOMTREE/2; //求两树中心点的高Y
+	return this.bottomTree.world.y - this.TREE_VERTICAL_GAP/2; //求两树中心点的高Y
 };
 
 /***********************************************************************************
