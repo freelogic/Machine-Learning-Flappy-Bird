@@ -2,7 +2,8 @@
 /* TOOL
 /***********************************************************************************/
 function isValid(x){
-  if (x == "" || x == undefined || x == null) {
+  //用“===”可以额外比对类型。0和""空比较“==”比较为true，而“===”比较为false；
+  if (x === "" || x == undefined || x == null) {
     return false;
    }else{
     return true;
@@ -27,3 +28,13 @@ function checkValueInRange(value,max,min,valueName) {
         return true;
     };
 };
+
+function twoDecimal(value) {
+    if (isValid(value) == false) {
+        alert("VALUE is NOT valid(empty or undefined or null)!");
+        return false;
+    }else {
+        return Math.round(value*100)/100;
+    };
+};
+

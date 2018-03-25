@@ -158,14 +158,16 @@ App.Main.prototype = {
         this.txtTreeHorizontalGap = new TextWithFontSize(this.game, 1060, 672-10, "0000","left","fnt_digits_red","10");
 		this.btnTreeHorizontalGapIncrease = this.game.add.button(1060+15, 665-10, 'imgPlus', this.onTreeHorizontalGapIncrease, this);
 		this.btnTreeHorizontalGapDecrease = this.game.add.button(1060+25, 665-10, 'imgMinus', this.onTreeHorizontalGapDecrease, this);
-         // 上面是相邻两树垂直间隔差异因子；
-        this.txtAdjacentTreeVerticalDifferenceGap = new TextWithFontSize(this.game, 1060, 684-10, "0000","left","fnt_digits_red","10");
-		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1060+15, 675-10, 'imgPlus', this.onAdjacentTreeVerticalDifferenceGapIncrease, this);
-		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1060+25, 675-10, 'imgMinus', this.onAdjacentTreeVerticalDifferenceGapDecrease, this);
-         // 下面是每棵树起始位置参数的增减！来调节所有树的间隔GAP的整体向上或向下偏移！
-        this.txtTreeWholeShift = new TextWithFontSize(this.game, 1060, 696-10, "0000","left","fnt_digits_red","10");
-		this.btnTreeWholeShiftIncrease = this.game.add.button(1060+15, 685-10, 'imgPlus', this.onTreeWholeShiftIncrease, this);
-		this.btnTreeWholeShiftDecrease = this.game.add.button(1060+25, 685-10, 'imgMinus', this.onTreeWholeShiftDecrease, this);
+
+        // 上面是相邻两树垂直间隔差异因子；
+        this.txtAdjacentTreeVerticalDifference = new TextWithFontSize(this.game, 1060, 684-10, "0000","left","fnt_digits_red","10");
+		this.btnAdjacentTreeVerticalDifferenceIncrease = this.game.add.button(1060+15, 675-10, 'imgPlus', this.onAdjacentTreeVerticalDifferenceIncrease, this);
+		this.btnAdjacentTreeVerticalDifferenceDecrease = this.game.add.button(1060+25, 675-10, 'imgMinus', this.onAdjacentTreeVerticalDifferenceDecrease, this);
+
+        // 下面是每棵树起始位置参数的增减！来调节所有树的间隔GAP的整体向上或向下偏移！
+        this.txtTreeVerticalShift = new TextWithFontSize(this.game, 1060, 696-10, "0000","left","fnt_digits_red","10");
+		this.btnTreeVerticalShiftIncrease = this.game.add.button(1060+15, 685-10, 'imgPlus', this.onTreeVerticalShiftIncrease, this);
+		this.btnTreeVerticalShiftDecrease = this.game.add.button(1060+25, 685-10, 'imgMinus', this.onTreeVerticalShiftDecrease, this);
 
 		new TextWithFontSize(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
         this.txtBirdFlappySpeed = new TextWithFontSize(this.game, 1230, 660-10, "0000","left","fnt_digits_red","10");
@@ -374,7 +376,9 @@ App.Main.prototype = {
     updateEnvironmentParameters : function(){
         this.txtTreeVerticalGap.text = this.BarrierGroup.getAt(0).getTreeVerticalGap(); //update：TVG
         this.txtTreeHorizontalGap.text = this.getTreeHorizontalGap(); //update：THG
-        //this.txtAdjacentTreeVerticalDifference.text = this.BarrierGroup.getAt(0).getAdjacentTreeVerticalDifference(); //update：ATVD
+        this.txtAdjacentTreeVerticalDifference.text = this.BarrierGroup.getAt(0).getAdjacentTreeVerticalDifference(); //update：ATVD
+        this.txtTreeVerticalShift.text = this.BarrierGroup.getAt(0).getTreeVerticalShift(); //update：TVS
+        //TODO：调整环境策略后，应重新计分！
     },
     onTreeVerticalGapIncrease : function(){     //runtime加大上下两树间隔GAP
 		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(5);}, this); this.uep(); },
@@ -384,12 +388,21 @@ App.Main.prototype = {
     onTreeHorizontalGapIncrease : function(){this.adjustTreeHorizontalGap(5); this.uep();},//runtime加大左右两树间隔GAP
     onTreeHorizontalGapDecrease : function(){this.adjustTreeHorizontalGap(-5);this.uep();},//runtime减小左右两树间隔GAP
 
-    //todo:
-    //runtime降低上下两树间隔GAP出现中心位置
-    //runtime升高上下两树间隔GAP出现中心位置
+    onAdjacentTreeVerticalDifferenceIncrease : function(){ 	//runtime加大左右(相邻)两树间隔GAP的垂直差异因子(区别变大)
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(0.05);}, this);this.uep();},
+    onAdjacentTreeVerticalDifferenceDecrease : function(){ 	//runtime减小左右(相邻)两树间隔GAP的垂直差异因子（区别变小）
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(-0.05);}, this);this.uep();},
 
-    //runtime加大左右(相邻)两树间隔GAP的上下差异因子
-    //runtime减小左右(相邻)两树间隔GAP的上下差异因子
+    onTreeVerticalShiftIncrease : function(){ 	//runtime整体升高所有树的顶部起始位置Y(等于也身高了中间上下两树垂直间隔GAP的中心位置）
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(5);}, this);this.uep();},
+    onTreeVerticalShiftDecrease : function(){ 	//runtime整体降低所有树的顶部起始位置Y(等于也身高了中间上下两树垂直间隔GAP的中心位置）
+		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(-5);}, this);this.uep();},
+
+
+
+
+    //todo:
+
 
     //runtime加大bird平飞(移屏)速度
     //runtime减小bird平飞(移屏)速度
@@ -431,13 +444,14 @@ var TreeGroup = function(game, parent, index){
 	//CC: additional parameters
 	this.TREE_VERTICAL_GAP = 150; //上下两棵树之间的(垂直)距离GAP
 	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
-	this.TREE_HEIGHT_RATIO_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
-	this.TREE_START_Y_FACTOR = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
+	this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
+	this.TREE_VERTICAL_SHIFT = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
 TreeGroup.prototype.constructor = TreeGroup;
 
+//调整“上下两树距离“方法；
 TreeGroup.prototype.adjustTreeVerticalGap = function(x) {
     var ret1=checkValueInRange(this.TREE_VERTICAL_GAP+x,200,100,"上下两树间距");
     var ret2=checkValueInRange(x,5,-5,"上下两树间距-增量");
@@ -445,6 +459,26 @@ TreeGroup.prototype.adjustTreeVerticalGap = function(x) {
 };
 TreeGroup.prototype.setTreeVerticalGap = function(x) {this.TREE_VERTICAL_GAP = this.TREE_VERTICAL_GAP +x;};
 TreeGroup.prototype.getTreeVerticalGap = function() {return this.TREE_VERTICAL_GAP;};
+
+//调整“相邻两树垂直间隔差异因子“方法；
+TreeGroup.prototype.adjustAdjacentTreeVerticalDifference = function(x) {
+    var ret1=checkValueInRange(this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR+x,1.00,0.01,"相邻两树垂直间隔差异因子");
+    var ret2=checkValueInRange(x,0.10,-0.10,"相邻两树垂直间隔差异因子-增量");
+    if (ret1&&ret2) {this.setAdjacentTreeVerticalDifference(x);};
+};
+TreeGroup.prototype.setAdjacentTreeVerticalDifference = function(x) {this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR = twoDecimal(this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR +x);};
+TreeGroup.prototype.getAdjacentTreeVerticalDifference = function() {return this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR;};
+
+//调整“所有树的顶部起始位置Y“方法；
+TreeGroup.prototype.adjustTreeVerticalShift = function(x) {
+    var ret1=checkValueInRange(this.TREE_VERTICAL_SHIFT+x,100,-100,"相邻两树垂直间隔差异因子");
+    var ret2=checkValueInRange(x,100,-100 ,"相邻两树垂直间隔差异因子-增量");
+    if (ret1&&ret2) {this.setTreeVerticalShift(x);};
+};
+TreeGroup.prototype.setTreeVerticalShift = function(x) {this.TREE_VERTICAL_SHIFT = this.TREE_VERTICAL_SHIFT +x;};
+TreeGroup.prototype.getTreeVerticalShift = function() {return this.TREE_VERTICAL_SHIFT;};
+
+
 
 TreeGroup.prototype.restart = function(x) {
 	this.topTree.reset(0, 0);
@@ -456,7 +490,7 @@ TreeGroup.prototype.restart = function(x) {
 	//this.y = this.game.rnd.integerInRange(110-this.topTree.height, -20);
 
 	//如下定义了一个倍率因子，让一排树的y最高点起点产生的范围[min,max]是TREE的多少倍？tree=400像素；
-	this.y = this.game.rnd.integerInRange(0 - this.topTree.height * this.TREE_HEIGHT_RATIO_FACTOR+this.TREE_START_Y_FACTOR, 0+this.TREE_START_Y_FACTOR);
+	this.y = this.game.rnd.integerInRange(0 - this.topTree.height * this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR+this.TREE_VERTICAL_SHIFT, 0+this.TREE_VERTICAL_SHIFT);
 
 	//this.setAll('body.velocity.x', -200); //velocity：速率
 	this.setAll('body.velocity.x', this.V_BIRD_FLY); //velocity：飞鸟(或称“移屏”)速率，太快将无法学习到收敛和始终成功，因为可能物理上飞行无法适应突变，翅膀太慢！
