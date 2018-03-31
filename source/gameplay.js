@@ -1,23 +1,12 @@
-/***********************************************************************************
-/* TOOL
-/***********************************************************************************/
-//function isValid2(x){
-//  if (x == "" || x == undefined || x == null) {
-//    return false;
-//   }else{
-//    return true;
-//   }
-//};
-
-document.write('<script src="./cctool.js" type="text/javascript" ></script>');
+//通过phaser.js框架的上层代码应该有document标准容器（上下文），来传递工具类JS；
+document.write('<script src="utils.js" type="text/javascript" ></script>');
+//document.write('<script src="game/entity/textWithFontSize.js" type="text/javascript" ></script>');
 
 /***********************************************************************************
 /* Create a new Phaser Game on window load
 /***********************************************************************************/
-
 window.onload = function () {
 	var game = new Phaser.Game(1280, 720, Phaser.CANVAS, 'game');
-	
 	game.state.add('Main', App.Main);
 	game.state.start('Main');
 };
@@ -25,7 +14,6 @@ window.onload = function () {
 /***********************************************************************************
 /* Main program
 /***********************************************************************************/
-
 var App = {};
 
 App.Main = function(game){
@@ -42,10 +30,9 @@ App.Main = function(game){
 	//因为开始这700是INPUT1，而且仅在restart的情况下才有，强化学习一遍遍的retry，它占的比重少，情况只在restart后几秒出现，不容易学习！
 	//而如果将这个参数调节为和之后所有的两棵树水平间距相同，也就是等于有利于将上期的优势鸟，更容易保留到下期依然为优势鸟，因为它可以不用在
 	//RESTART之后这个INPUT1和平时飞行不太一样的而且出现情况少的无法很好学习的这段RESTART时间内就随机的死掉！
-	//结论：BARRIER_FIRST_DISTANCE和BARRIER_DISTANCE，差异越小，更有利于成功鸟的继承和保活，分数就更快更高！
+	//结论：BARRIER_FIRST_DISTANCE和BARRIER_DISTANCE，差异越小，更有利于成功鸟的继承和保活，分数就更快更高！（待细测）
 	//详见“genetic.js”中函数“evolvePopulation”的解释；
-
-
+	this.GRAVITY = 5000; //游戏世界的垂直往下重力！
 }
 
 App.Main.prototype = {
@@ -85,8 +72,9 @@ App.Main.prototype = {
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		// set the gravity of the world
-		// todo: 怎么计算？尺度和鸟的-600往上飞是一致的？
-		this.game.physics.arcade.gravity.y = 1300; //设定游戏世界的重力因子(效果)
+		// todo: 怎么计算？尺度和鸟的-600往上飞是一致的？ 待测试；
+		//this.game.physics.arcade.gravity.y = 1300;
+		this.game.physics.arcade.gravity.y=this.GRAVITY; //设定游戏世界的重力因子(效果)
 		
 		// create a new Genetic Algorithm with a population of 10 units which will be evolving by using 4 top units
 		//这里只给出了生成(遗传)算法的接口（10选4策略）
@@ -169,7 +157,7 @@ App.Main.prototype = {
 		this.btnTreeVerticalShiftIncrease = this.game.add.button(1060+15, 685-10, 'imgPlus', this.onTreeVerticalShiftIncrease, this);
 		this.btnTreeVerticalShiftDecrease = this.game.add.button(1060+25, 685-10, 'imgMinus', this.onTreeVerticalShiftDecrease, this);
 
-		new TextWithFontSize(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
+		new Text2(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
         this.txtBirdFlappySpeed = new TextWithFontSize(this.game, 1230, 660-10, "0000","left","fnt_digits_red","10");
 		this.btnBirdFlappySpeedIncrease = this.game.add.button(1230+15, 655-10, 'imgPlus', this.onBirdFlappySpeedIncrease, this);
 		this.btnBirdFlappySpeedDecrease = this.game.add.button(1230+25, 655-10, 'imgMinus', this.onBirdFlappySpeedDecrease, this);
@@ -378,41 +366,38 @@ App.Main.prototype = {
         this.txtTreeHorizontalGap.text = this.getTreeHorizontalGap(); //update：THG
         this.txtAdjacentTreeVerticalDifference.text = this.BarrierGroup.getAt(0).getAdjacentTreeVerticalDifference(); //update：ATVD
         this.txtTreeVerticalShift.text = this.BarrierGroup.getAt(0).getTreeVerticalShift(); //update：TVS
+        this.txtBirdHorizontalSpeed.text = this.BarrierGroup.getAt(0).getBirdHorizontalFlySpeed(); //update: BHFS
+        this.txtBirdFlappySpeed.text = this.BirdGroup.getAt(0).getBirdVerticalFlappySpeed(); //update: BVFS
+        this.txtGameEngineGravity.text = this.getGravityY(); //update G.Y
         //TODO：调整环境策略后，应重新计分！
     },
-    onTreeVerticalGapIncrease : function(){     //runtime加大上下两树间隔GAP
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(5);}, this); this.uep(); },
-    onTreeVerticalGapDecrease : function(){ 	//runtime减小上下两树间隔GAP
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(-5);}, this);this.uep();},
+    //runtimee[增/减]上下两树间隔GAP
+    onTreeVerticalGapIncrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(5);}, this); this.uep(); },
+    onTreeVerticalGapDecrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalGap(-5);}, this);this.uep();},
 
-    onTreeHorizontalGapIncrease : function(){this.adjustTreeHorizontalGap(5); this.uep();},//runtime加大左右两树间隔GAP
-    onTreeHorizontalGapDecrease : function(){this.adjustTreeHorizontalGap(-5);this.uep();},//runtime减小左右两树间隔GAP
+    //runtime[增/减]左右两树间隔GAP
+    onTreeHorizontalGapIncrease : function(){this.adjustTreeHorizontalGap(5); this.uep();},
+    onTreeHorizontalGapDecrease : function(){this.adjustTreeHorizontalGap(-5);this.uep();},
 
-    onAdjacentTreeVerticalDifferenceIncrease : function(){ 	//runtime加大左右(相邻)两树间隔GAP的垂直差异因子(区别变大)
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(0.05);}, this);this.uep();},
-    onAdjacentTreeVerticalDifferenceDecrease : function(){ 	//runtime减小左右(相邻)两树间隔GAP的垂直差异因子（区别变小）
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(-0.05);}, this);this.uep();},
+    //runtime[增/减]左右(相邻)两树间隔GAP的垂直差异因子(区别变大)
+    onAdjacentTreeVerticalDifferenceIncrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(0.05);}, this);this.uep();},
+    onAdjacentTreeVerticalDifferenceDecrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustAdjacentTreeVerticalDifference(-0.05);}, this);this.uep();},
 
-    onTreeVerticalShiftIncrease : function(){ 	//runtime整体升高所有树的顶部起始位置Y(等于也身高了中间上下两树垂直间隔GAP的中心位置）
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(5);}, this);this.uep();},
-    onTreeVerticalShiftDecrease : function(){ 	//runtime整体降低所有树的顶部起始位置Y(等于也身高了中间上下两树垂直间隔GAP的中心位置）
-		this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(-5);}, this);this.uep();},
+    //runtime整体[升高/降低]所有树的顶部起始位置Y(等于也身高了中间上下两树垂直间隔GAP的中心位置）
+    onTreeVerticalShiftIncrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(5);}, this);this.uep();},
+    onTreeVerticalShiftDecrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustTreeVerticalShift(-5);}, this);this.uep();},
 
+    //runtime[增/减]bird水平右飞(背景TREEGROUP水平左移/景物左移屏)的速度
+    onBirdHorizontalSpeedIncrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustBirdHorizontalFlySpeed(10);}, this);this.uep();},
+    onBirdHorizontalSpeedDecrease : function(){this.BarrierGroup.forEach(function(barrier){barrier.adjustBirdHorizontalFlySpeed(-10);}, this);this.uep();},
 
+    //runtime[增/减]bird-flappy垂直上飞速度
+    onBirdFlappySpeedIncrease : function(){this.BirdGroup.forEach(function(bird){bird.adjustBirdVerticalFlappySpeed(10);}, this);this.uep();},
+    onBirdFlappySpeedDecrease : function(){this.BirdGroup.forEach(function(bird){bird.adjustBirdVerticalFlappySpeed(-10);}, this);this.uep();},
 
-
-    //todo:
-
-
-    //runtime加大bird平飞(移屏)速度
-    //runtime减小bird平飞(移屏)速度
-
-    //runtime加大bird-flappy垂直飞速度
-    //runtime减小bird-flappy垂直飞速度
-
-    //runtime加大bird不flappy时垂直下落的速度(游戏物理引擎的重力因子)
-    //runtime减小bird不flappy时垂直下落的速度(游戏物理引擎的重力因子)
-
+    //runtime[增/减]bird不flappy时垂直下落的速度(游戏世界的重力因子Y方向)
+    onGameEngineGravityIncrease : function(){this.adjustGravityY(50); this.uep();},
+    onGameEngineGravityDecrease : function(){this.adjustGravityY(-50);this.uep();},
 
 
 //调整“TreeHorizontalGap”就是调整“this.BARRIER_DISTANCE”
@@ -424,6 +409,14 @@ App.Main.prototype = {
     setTreeHorizontalGap : function(x) {this.BARRIER_DISTANCE = this.BARRIER_DISTANCE +x;},
     getTreeHorizontalGap : function() {return this.BARRIER_DISTANCE;},
 
+//调整“重力/this.game.physics.arcade.gravity.y”
+    adjustGravityY : function(x) {
+        var ret1=checkValueInRange(this.game.physics.arcade.gravity.y+x,5000,-5000,"游戏世界垂直重力GRAVITY.Y");
+        var ret2=checkValueInRange(x,50,-50,"游戏世界垂直重力GRAVITY.Y-增量");
+        if (ret1&&ret2) {this.setGravityY(x);};
+    },
+    setGravityY : function(x) {this.game.physics.arcade.gravity.y = this.game.physics.arcade.gravity.y +x;},
+    getGravityY : function() {return this.game.physics.arcade.gravity.y;},
 }
 
 /***********************************************************************************
@@ -442,8 +435,8 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.TREE_VERTICAL_GAP = 150; //上下两棵树之间的(垂直)距离GAP
-	this.V_BIRD_FLY = -150; //BIRD水平飞行的速度;
+	this.TREE_VERTICAL_GAP = 130; //上下两棵树之间的(垂直)距离GAP
+	this.BIRD_HORIZONTAL_FLY_SPEED = -200; //BIRD水平飞行的速度; TREE往左移的效果就是鸟往右移！
 	this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
 	this.TREE_VERTICAL_SHIFT = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
 };
@@ -478,6 +471,14 @@ TreeGroup.prototype.adjustTreeVerticalShift = function(x) {
 TreeGroup.prototype.setTreeVerticalShift = function(x) {this.TREE_VERTICAL_SHIFT = this.TREE_VERTICAL_SHIFT +x;};
 TreeGroup.prototype.getTreeVerticalShift = function() {return this.TREE_VERTICAL_SHIFT;};
 
+//调整“所有树左移(即鸟水平右移或或往右fly)”方法；
+TreeGroup.prototype.adjustBirdHorizontalFlySpeed = function(x) {
+    var ret1=checkValueInRange(this.BIRD_HORIZONTAL_FLY_SPEED+x,2000,-2000,"鸟水平右飞速度");
+    var ret2=checkValueInRange(x,10,-10 ,"鸟水平右飞速度-增量");
+    if (ret1&&ret2) {this.setBirdHorizontalFlySpeed(x);};
+};
+TreeGroup.prototype.setBirdHorizontalFlySpeed = function(x) {this.BIRD_HORIZONTAL_FLY_SPEED = this.BIRD_HORIZONTAL_FLY_SPEED +x;};
+TreeGroup.prototype.getBirdHorizontalFlySpeed = function() {return this.BIRD_HORIZONTAL_FLY_SPEED;};
 
 
 TreeGroup.prototype.restart = function(x) {
@@ -492,8 +493,8 @@ TreeGroup.prototype.restart = function(x) {
 	//如下定义了一个倍率因子，让一排树的y最高点起点产生的范围[min,max]是TREE的多少倍？tree=400像素；
 	this.y = this.game.rnd.integerInRange(0 - this.topTree.height * this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR+this.TREE_VERTICAL_SHIFT, 0+this.TREE_VERTICAL_SHIFT);
 
-	//this.setAll('body.velocity.x', -200); //velocity：速率
-	this.setAll('body.velocity.x', this.V_BIRD_FLY); //velocity：飞鸟(或称“移屏”)速率，太快将无法学习到收敛和始终成功，因为可能物理上飞行无法适应突变，翅膀太慢！
+	//this.setAll('body.velocity.x', -200); //velocity：速率； setAll指TREEGROUP所有4排8棵树都以相同的速度平移；
+	this.setAll('body.velocity.x', this.BIRD_HORIZONTAL_FLY_SPEED); //飞鸟(或称“移屏”)速率，太快将无法学习到收敛和始终成功，因为可能物理上飞行无法适应突变，翅膀太慢！
 };
 
 TreeGroup.prototype.getWorldX = function() {
@@ -518,8 +519,8 @@ var Tree = function(game, frame) {
 	
 	this.game.physics.arcade.enableBody(this);
 	
-	this.body.allowGravity = false;
-	this.body.immovable = true;
+	this.body.allowGravity = false; //猜测(暂无时间求证)：指TREE不会受重力而掉下来；
+	this.body.immovable = true; //猜测(暂无时间求证)：指TREE不会变化消失（而不同于小蜜蜂里面被打中的飞机会消失）；
 };
 
 Tree.prototype = Object.create(Phaser.Sprite.prototype);
@@ -544,7 +545,7 @@ var Bird = function(game, x, y, index) {
 	this.game.physics.arcade.enableBody(this);
 
 	//CC: additional parameters
-	this.V_BIRD_FLAPPY = -400; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.BIRD_VERTICAL_FLAPPY_SPEED = -450; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
@@ -563,7 +564,7 @@ Bird.prototype.restart = function(iteration){
 
 Bird.prototype.flap = function(){
 	//this.body.velocity.y = -400;
-	this.body.velocity.y = this.V_BIRD_FLAPPY;
+	this.body.velocity.y = this.BIRD_VERTICAL_FLAPPY_SPEED;
 };
 
 Bird.prototype.death = function(){
@@ -571,12 +572,22 @@ Bird.prototype.death = function(){
 	this.kill();
 };
 
+//调整“鸟垂直flappy上飞的速度”方法；
+Bird.prototype.adjustBirdVerticalFlappySpeed = function(x) {
+    var ret1=checkValueInRange(this.BIRD_VERTICAL_FLAPPY_SPEED+x,3000,-3000,"鸟水平右飞速度");
+    var ret2=checkValueInRange(x,10,-10 ,"鸟水平右飞速度-增量");
+    if (ret1&&ret2) {this.setBirdVerticalFlappySpeed(x);};
+};
+Bird.prototype.setBirdVerticalFlappySpeed = function(x) {this.BIRD_VERTICAL_FLAPPY_SPEED = this.BIRD_VERTICAL_FLAPPY_SPEED +x;};
+Bird.prototype.getBirdVerticalFlappySpeed = function() {return this.BIRD_VERTICAL_FLAPPY_SPEED;};
+
 /***********************************************************************************
 /* Text Class extends Phaser.BitmapText
 /***********************************************************************************/
 
 //var Text = function(game, x, y, text, align, font){
 //	Phaser.BitmapText.call(this, game, x, y, font, text, 16);
+///*
 var TextWithFontSize = function(game, x, y, text, align, font, fontSize){
 	Phaser.BitmapText.call(this, game, x, y, font, text, fontSize);
 
@@ -589,7 +600,9 @@ var TextWithFontSize = function(game, x, y, text, align, font, fontSize){
 };
 
 TextWithFontSize.prototype = Object.create(Phaser.BitmapText.prototype);
-TextWithFontSize.prototype.constructor = Text;
+//TextWithFontSize.prototype.constructor = Text;
+TextWithFontSize.prototype.constructor = TextWithFontSize;
+//*/
 
 var Text = function(game, x, y, text, align, font){
 	Phaser.BitmapText.call(this, game, x, y, font, text, 16);
