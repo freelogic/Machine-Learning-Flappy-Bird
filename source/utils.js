@@ -1,3 +1,6 @@
+//Usage: add below line in JS which need function in this JS;
+//document.write('<script src="utils.js" type="text/javascript" ></script>');
+
 /***********************************************************************************
 /* TOOL
 /***********************************************************************************/
@@ -29,12 +32,23 @@ function checkValueInRange(value,max,min,valueName) {
     };
 };
 
+//小数点保留2位；
 function twoDecimal(value) {
     if (isValid(value) == false) {
         alert("VALUE is NOT valid(empty or undefined or null)!");
         return false;
     }else {
         return Math.round(value*100)/100;
+    };
+};
+
+//小数点保留2位，用函数“toFixed(2)”实现，不一定都可用！注意测试！
+function p2(value) {
+    if (isValid(value) == false) {
+        alert("VALUE is NOT valid(empty or undefined or null)!");
+        return false;
+    }else {
+        return value.toFixed(2);
     };
 };
 

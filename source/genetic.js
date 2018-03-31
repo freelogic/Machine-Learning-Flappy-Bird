@@ -1,3 +1,5 @@
+document.write('<script src="utils.js" type="text/javascript" ></script>');
+
 /***********************************************************************************
 /* Genetic Algorithm implementation
 /***********************************************************************************/
@@ -14,11 +16,11 @@ var GeneticAlgorithm = function(max_units, top_units){
 	this.SCALE_FACTOR_HEIGHT = this.SCALE_FACTOR/10; // the factor used to scale normalized input values
 	this.SCALE_FACTOR_WIDTH = this.SCALE_FACTOR/2; // the factor used to scale normalized input values
 
-	this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
-	this.GA_TYPE_MUTATION=1;
-	this.GA_RANDOM_THRESHOLD=0.3;
-	this.GA_RANDOM_THRESHOLD_FOR_Perceptron_bias=this.GA_RANDOM_THRESHOLD;
-	this.GA_RANDOM_THRESHOLD_FOR_Perceptron_weight=this.GA_RANDOM_THRESHOLD;
+	this.GA_TYPE_CROSSOVER_AND_MUTATION=0; //作者初始算法；
+	this.GA_TYPE_MUTATION_ONLY=1;
+	this.GENE_MUTATED_RATIO_DEFAULT=0.3;
+	this.GENE_MUTATED_RATIO_FOR_Perceptron_bias=0.05;
+	this.GENE_MUTATED_RATIO_FOR_Perceptron_weight=0.05;
 }
 
 GeneticAlgorithm.prototype = {
@@ -26,7 +28,7 @@ GeneticAlgorithm.prototype = {
 	reset : function(){
 		this.iteration = 1;	// current iteration number (it is equal to the current population number)
 		//this.mutateRate = 1; // initial mutation rate
-		this.mutateRate  =this.GA_RANDOM_THRESHOLD;
+		this.mutateRate  =this.GENE_MUTATED_RATIO_DEFAULT;
 		
 		this.best_population = 0; // the population number of the best unit
 		this.best_fitness = 0;  // the fitness of the best unit
@@ -46,7 +48,7 @@ GeneticAlgorithm.prototype = {
 			//一般经过迭代到30-40次左右进入稳定进化；而（2,6,1）只要10次迭代就进入稳定进化了；
 			//var newUnit = new synaptic.Architect.Perceptron(2, 12, 6, 1);
 
-			var newUnit = new synaptic.Architect.Perceptron(2, 6, 1);
+			var newUnit = new synaptic.Architect.Perceptron(2, 12, 1);
 			//超过1个hidden layer不行，因为这类的遗传算法是简单的对神经元的bias的截距做交换，
 			//并对weight/bias做随机调整，但因为截距是格式如：neurons[i]['bias']，如果是多个隐藏层，
 			//将导致前后颠倒等毫不合理的遗传，破坏性太大；导致无法强化学习和继承优势！
@@ -95,8 +97,8 @@ GeneticAlgorithm.prototype = {
 			this.best_score = Winners[0].score;
 		}
 
-		this.genetic_algorithm(this.GA_TYPE_MUTATION);
-        //this.genetic_algorithm(this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG);
+		this.genetic_algorithm(this.GA_TYPE_MUTATION_ONLY);
+        //this.genetic_algorithm(this.GA_TYPE_CROSSOVER_AND_MUTATION);
 
 		// 子代排序
 		this.Population.sort(function(unitA, unitB){
@@ -152,7 +154,6 @@ GeneticAlgorithm.prototype = {
 		for (var i = 0; i < offspring.connections.length; i++){
 			offspring.connections[i]['weight'] = this.mutate(offspring.connections[i]['weight']);
 		}
-		
 		return offspring;
 	},
 	
@@ -162,7 +163,6 @@ GeneticAlgorithm.prototype = {
 			var mutateFactor = 1 + ((Math.random() - 0.5) * 3 + (Math.random() - 0.5));
 			gene *= mutateFactor;
 		}
-		
 		return gene;
 	},
 	
@@ -187,32 +187,32 @@ GeneticAlgorithm.prototype = {
 	//遗传算法（选择器）
     genetic_algorithm : function(gaType) {
         //定义默认遗传算法的类型常量；
-        //var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
-	    //var GA_TYPE_MUTATION=1;
+        //var GA_TYPE_CROSSOVER_AND_MUTATION=0;
+	    //var GA_TYPE_MUTATION_ONLY=1;
 
-	    var gatype;
-	    if (gaType == "" || gaType == undefined || gaType == null) {
-	      gatype = this.GA_TYPE_MUTATION; //默认为随机变异算法
+	    var gt;
+	    if (isValid(gaType)==false) {
+	      gt = this.GA_TYPE_MUTATION_ONLY; //默认为随机变异算法
 	    } else {
-	      gatype = gaType;
+	      gt = gaType;
 	    }
         //根据类型来处理遗传算法具体的子代继承处理；
-	    switch(gatype) {
-            case this.GA_TYPE_MUTATION:
-                this.ga_by_random_threshold();
+	    switch(gt) {
+            case this.GA_TYPE_MUTATION_ONLY:
+                this.ga_by_mutation_only();
                 break;
-            case this.GA_TYPE_CROSSOVER_AND_MUTATION_ORIG:
-                this.ga_orig();
+            case this.GA_TYPE_CROSSOVER_AND_MUTATION:
+                this.ga_crossover_and_mutation();
                 break;
             default:
-                this.ga_by_random_threshold();
+                this.ga_by_mutation_only();
         };
     },
 
 
 	//遗传算法（选择器）
-	//var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
-    ga_orig : function() {
+	//var GA_TYPE_CROSSOVER_AND_MUTATION=0;
+    ga_crossover_and_mutation : function() {
         var Winners = this.selection();
     	// fill the rest of the next population with new units using crossover and mutation
 		// 此处循环，跳过winner，只修订（生成）子代6个！
@@ -255,32 +255,39 @@ GeneticAlgorithm.prototype = {
 		}
     },
 
-	//用经典的遗传算法，增加变异因子GENE_MUTATED_RATIO=0.1
-	crossOverByMutated : function(parent, geneMutatedRatio) {
+	//变异算法：类似神经网络中的dropout方法，简单丢弃/置为0；
+	mutationUsingDropout : function(bird,weightMutatedRatio,biasMutatedRatio) {
 	    // 定义默认变异因子
+	    var GENE_MUTATED_RATIO_DEFAULT = 0.3;
 	    var ratio;
-	    if (geneMutatedRatio == "" || geneMutatedRatio == undefined || geneMutatedRatio == null) {
-	      ratio = this.GA_RANDOM_THRESHOLD;
-	    } else {
-	      ratio = geneMutatedRatio;
-	    }
+	    if (isValid(weightMutatedRatio) == false) {
+	      weightMutatedRatio = GENE_MUTATED_RATIO_DEFAULT/3;
+	    }else if (isValid(biasMutatedRatio) == false) {
+	      biasMutatedRatio = GENE_MUTATED_RATIO_DEFAULT;
+	    };
+	    //alert("weightMutatedRatio"+p2(weightMutatedRatio));
 
-		//随机归零（变异）一定概率的神经元；
-		for (var i = 0; i < parent.neurons.length; i++){
+		//随机变异一定概率比例的神经元的bias；
+		for (var i = 0; i < bird.neurons.length; i++){
 		    //INPUT/OUTPUT神经元不需要变异；
-			if (Math.random() < ratio && parent.neurons[i].layer != "input" && parent.neurons[i].layer != "output") {
-			    parent.neurons[i]['bias'] = 0;
+			if (Math.random() < biasMutatedRatio && bird.neurons[i].layer != "input" && bird.neurons[i].layer != "output") {
+			    bird.neurons[i]['bias'] = 0;//just simple to dropout
+			};
+		};
+		//随机变异一定概率比例的神经元的weight；
+		for (var i = 0; i < bird.connections.length; i++){
+		    if (Math.random() < weightMutatedRatio) {
+			    bird.connections[i]['weight'] = 0;//just simple to dropout
 			}
 		}
-		return parent;
+		return bird;
 	},
 
-    //遗传算法（选择器）
-	//var GA_TYPE_CROSSOVER_AND_MUTATION_ORIG=0;
-    ga_by_random_threshold : function() {
+    //遗传算法: 随机选取优胜者（比如40%，即10选4），并给予一定变异；
+    ga_by_mutation_only : function() {
         var Winners = this.selection();
 		for (var i=this.top_units; i<this.max_units; i++){
-			offspring = this.crossOverByMutated(this.getRandomUnit(Winners).toJSON(),this.GA_RANDOM_THRESHOLD);
+			offspring = this.mutationUsingDropout(this.getRandomUnit(Winners).toJSON(),this.GENE_MUTATED_RATIO_FOR_Perceptron_weight,this.GENE_MUTATED_RATIO_FOR_Perceptron_bias);
 
 			// mutate the offspring
 			offspring = this.mutation(offspring);

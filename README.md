@@ -55,8 +55,31 @@
   * [KerasJS](https://github.com/transcranial/keras-js);支持GPU（使用WebGL得到GPU支持）
   * [brain.js](https://github.com/BrainJS/brain.js/);支持GPU
   * TODO：待补充
-
-
-
-
+* JS下的GRAPH图库：
+  * **cytoscape.js**: [github项目](https://github.com/freelogic/cytoscape.js),[主页](http://js.cytoscape.org),比较heavy的库，稍有点复杂。
+  * **algorithms.js**: [github项目](https://github.com/felipernb/algorithms.js),[主页](http://felipernb.github.io/algorithms.js/),包括graph的广度/深度优先，最短路径等，各种数据结构的典型算法都有，全是JS！
+  * **javascript-datastructures-algorithms**: [github项目](https://github.com/loiane/javascript-datastructures-algorithms),[无主页](),有电子书及举例，包括graph/tree等数据结构的JS版本，极好！；
+  * XXX.js: [github项目](),[主页](),请评价；
+  * XXX.js: [github项目](),[主页](),请评价；
+  * XXX.js: [github项目](),[主页](),请评价；
+* JS下的画图库：
+  * sigma.js: [githuab项目](https://github.com/freelogic/sigma.js),[主页](http://sigmajs.org/),只画graph网络图一种，用于呈现较简单；
+  * **plotly.js**: [githuab项目](https://github.com/plotly/plotly.js),[主页](https://plot.ly/javascript/parallel-coordinates-plot/),比较强大，比chart.js更专业些的画图plot工具；
+  * **chart.js**: [github项目](https://github.com/freelogic/Chart.js),[主页](http://www.chartjs.org/),使用广泛，界面比较卡通，不是科学风；
+  * VivaGraphJS: [github项目](https://github.com/anvaka/VivaGraphJS),[无主页](),仅仅是画网络图，并能显示icon图标，简单易用！
+  * billboard.js: [github项目](https://github.com/naver/billboard.js),[主页](https://naver.github.io/billboard.js/),使用非常简单，详见主页举例！基于C3；  
+  * **C3.js**: [github项目](https://github.com/c3js/c3),[主页](http://c3js.org/examples.html),D3最著名的wrapper包装控件，方便使用！； 
+  * **D3.js**: [github项目](https://github.com/d3/d3),[主页](https://d3js.org/),史上最强js图（包括力反馈图等等），是其他C3等js库的基础！； 
+  * Flotr2: [github项目](https://github.com/HumbleSoftware/Flotr2),[主页](http://www.humblesoftware.com/flotr2/index),简单专注；[用D3学图论](https://mrpandey.github.io/d3graphTheory/unit.html?vertices-and-edges) 
+  * **graphviz**: [gitlab项目](https://gitlab.com/graphviz/graphviz/),[主页](https://graphviz.gitlab.io/gallery/),电脑IT工程图等最牛； 
+  * WebCola: [github项目](https://github.com/tgdwyer/WebCola),[主页](http://ialab.it.monash.edu/webcola/),基于D3；         
+  * XXX.js: [github项目](),[无主页](),请评价； 
+  * XXX.js: [github项目](),[无主页](),请评价； 
+  * XXX.js: [github项目](),[无主页](),请评价； 
+  
+  
+  
+  
+  
+  
 ## END

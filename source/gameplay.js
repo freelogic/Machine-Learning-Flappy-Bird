@@ -23,7 +23,7 @@ App.Main = function(game){
 	this.STATE_GAMEOVER = 4;
 	
 	//this.BARRIER_DISTANCE = 300;  //左右两棵树之间的距离，源程序默认值是300；
-	this.BARRIER_DISTANCE = 200;
+	this.BARRIER_DISTANCE = 180;
 	this.BARRIER_FIRST_DISTANCE = this.BARRIER_DISTANCE * 2; //每次重新启动后，左边第一颗树距离屏幕最左端鸟儿触发的距离；
 	//讨论及测试结论：
 	//如果将BARRIER_FIRST_DISTANCE设为原来的700，远大于两颗树之间的距离200，则会让上次成功的鸟（原始算法是4个）很容易再下次情况下失败！
@@ -157,7 +157,7 @@ App.Main.prototype = {
 		this.btnTreeVerticalShiftIncrease = this.game.add.button(1060+15, 685-10, 'imgPlus', this.onTreeVerticalShiftIncrease, this);
 		this.btnTreeVerticalShiftDecrease = this.game.add.button(1060+25, 685-10, 'imgMinus', this.onTreeVerticalShiftDecrease, this);
 
-		new Text2(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
+		new TextWithFontSize(this.game, 1220, 655-10, "BirdFlappySpeed:\nBirdHorizontalSpeed:\nGameEngineGravity","right","fnt_chars_black","10");
         this.txtBirdFlappySpeed = new TextWithFontSize(this.game, 1230, 660-10, "0000","left","fnt_digits_red","10");
 		this.btnBirdFlappySpeedIncrease = this.game.add.button(1230+15, 655-10, 'imgPlus', this.onBirdFlappySpeedIncrease, this);
 		this.btnBirdFlappySpeedDecrease = this.game.add.button(1230+25, 655-10, 'imgMinus', this.onBirdFlappySpeedDecrease, this);
@@ -435,10 +435,10 @@ var TreeGroup = function(game, parent, index){
 	this.add(this.bottomTree); // add the bottom Tree to this group
 
 	//CC: additional parameters
-	this.TREE_VERTICAL_GAP = 130; //上下两棵树之间的(垂直)距离GAP
-	this.BIRD_HORIZONTAL_FLY_SPEED = -200; //BIRD水平飞行的速度; TREE往左移的效果就是鸟往右移！
-	this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR = 0.75; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
-	this.TREE_VERTICAL_SHIFT = -50; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
+	this.TREE_VERTICAL_GAP = 120; //上下两棵树之间的(垂直)距离GAP
+	this.BIRD_HORIZONTAL_FLY_SPEED = -250; //BIRD水平飞行的速度; TREE往左移的效果就是鸟往右移！
+	this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR = 0.80; //1颗树高度的多少倍；越大，左右相邻的两排树的高低相差越大，开口通过的通道上次平移越大，难度越大；
+	this.TREE_VERTICAL_SHIFT = -10; //一排树（上下两颗）的上面起始位置的偏移因子，越大，则2颗树越靠下，则2颗树开口通道（鸟飞过）越靠下；难度不变；
 };
 
 TreeGroup.prototype = Object.create(Phaser.Group.prototype);
@@ -545,7 +545,7 @@ var Bird = function(game, x, y, index) {
 	this.game.physics.arcade.enableBody(this);
 
 	//CC: additional parameters
-	this.BIRD_VERTICAL_FLAPPY_SPEED = -450; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.BIRD_VERTICAL_FLAPPY_SPEED = -700; //BIRD垂直往上飞(扑打翅膀)的速度;
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
