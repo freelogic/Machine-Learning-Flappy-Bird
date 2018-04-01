@@ -52,3 +52,14 @@ function p2(value) {
     };
 };
 
+/***********************************************************************************
+/* define class point
+/***********************************************************************************/
+
+function Point(x,y){this.x=x;this.y=y;}//constructor
+Point.prototype.toString=function(){return '('+this.x+', '+this.y+')';}//method
+Point.prototype.setx=function(x){this.x = x;};//method
+Point.prototype.sety=function(y){this.y = y;};//method
+Point.prototype.setxy=function(x,y){this.x = x; this.y = y;};//method
+//var point=new Point(1,2);//demo
+

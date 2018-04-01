@@ -19,8 +19,8 @@ var GeneticAlgorithm = function(max_units, top_units){
 	this.GA_TYPE_CROSSOVER_AND_MUTATION=0; //作者初始算法；
 	this.GA_TYPE_MUTATION_ONLY=1;
 	this.GENE_MUTATED_RATIO_DEFAULT=0.3;
-	this.GENE_MUTATED_RATIO_FOR_Perceptron_bias=0.05;
-	this.GENE_MUTATED_RATIO_FOR_Perceptron_weight=0.05;
+	this.GENE_MUTATED_RATIO_FOR_Perceptron_bias=0.15;
+	this.GENE_MUTATED_RATIO_FOR_Perceptron_weight=0.15;
 }
 
 GeneticAlgorithm.prototype = {
@@ -48,7 +48,7 @@ GeneticAlgorithm.prototype = {
 			//一般经过迭代到30-40次左右进入稳定进化；而（2,6,1）只要10次迭代就进入稳定进化了；
 			//var newUnit = new synaptic.Architect.Perceptron(2, 12, 6, 1);
 
-			var newUnit = new synaptic.Architect.Perceptron(2, 12, 1);
+			var newUnit = new synaptic.Architect.Perceptron(4, 16, 1);
 			//超过1个hidden layer不行，因为这类的遗传算法是简单的对神经元的bias的截距做交换，
 			//并对weight/bias做随机调整，但因为截距是格式如：neurons[i]['bias']，如果是多个隐藏层，
 			//将导致前后颠倒等毫不合理的遗传，破坏性太大；导致无法强化学习和继承优势！
@@ -68,17 +68,25 @@ GeneticAlgorithm.prototype = {
 	
 	// activates the neural network of an unit from the population 
 	// to calculate an output action according to the inputs
-	activateBrain : function(bird, target){		
+	//activateBrain : function(bird, target){
+	activateBrain : function(bird, paramMap){
 		// input 1: the horizontal distance between the bird and the target
 		//var targetDeltaX = this.normalize(target.x, 700) * this.SCALE_FACTOR;
-		var targetDeltaX = this.normalize(target.x, 700) * this.SCALE_FACTOR_HEIGHT;
+		//var target = paramMap.get('TargetPoint');//原作者传了一个游戏上下文的item过来不必要，这里仅传递point就行；
+		var tp1 = paramMap.get('TP1');
+		var tp2 = paramMap.get('TP2');
+		//var target = tp1;
+		var targetDeltaX = this.normalize(tp1.x, 700) * this.SCALE_FACTOR_HEIGHT;
 		
 		// input 2: the height difference between the bird and the target
-		//var targetDeltaY = this.normalize(bird.y - target.y, 800) * this.SCALE_FACTOR;
-		var targetDeltaY = this.normalize(bird.y - target.y, 800) * this.SCALE_FACTOR_WIDTH;
+		//var targetDeltaY = this.normalize(bird.y - tp1.y, 800) * this.SCALE_FACTOR;
+		var targetDeltaY = this.normalize(bird.y - tp1.y, 800) * this.SCALE_FACTOR_WIDTH;
+
+		var target2DeltaX = this.normalize(tp2.x, 700) * this.SCALE_FACTOR_HEIGHT;
+		var target2DeltaY = this.normalize(bird.y - tp2.y, 800) * this.SCALE_FACTOR_WIDTH;
 	
 		// create an array of all inputs
-		var inputs = [targetDeltaX, targetDeltaY];
+		var inputs = [targetDeltaX, targetDeltaY,target2DeltaX, target2DeltaY];//增加第二个目标点作为新的input送到神经网络；
 		
 		// calculate outputs by activating synaptic neural network of this bird
 		var outputs = this.Population[bird.index].activate(inputs);

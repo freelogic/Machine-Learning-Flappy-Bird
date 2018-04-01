@@ -72,13 +72,11 @@ App.Main.prototype = {
 		this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
 		// set the gravity of the world
-		// todo: 怎么计算？尺度和鸟的-600往上飞是一致的？ 待测试；
 		//this.game.physics.arcade.gravity.y = 1300;
 		this.game.physics.arcade.gravity.y=this.GRAVITY; //设定游戏世界的重力因子(效果)
 		
 		// create a new Genetic Algorithm with a population of 10 units which will be evolving by using 4 top units
 		//这里只给出了生成(遗传)算法的接口（10选4策略）
-		//这里可以研究一下；
 		this.GA = new GeneticAlgorithm(10, 4);
 		
 		// create a BirdGroup which contains a number of Bird objects
@@ -121,11 +119,10 @@ App.Main.prototype = {
 		
 		for (var i=0; i<this.GA.max_units; i++){
 			var y = 46 + i*50;
-			
 			new Text(this.game, 1110, y, "Fitness:\nScore:", "right", "fnt_chars_black")
-			this.txtStatusPrevGreen.push(new Text(this.game, 1190, y, "", "right", "fnt_digits_green"));
-			this.txtStatusPrevRed.push(new Text(this.game, 1190, y, "", "right", "fnt_digits_red"));
-			this.txtStatusCurr.push(new Text(this.game, 1270, y, "", "right", "fnt_digits_blue"));
+			this.txtStatusPrevGreen.push(new Text(this.game, 1190, y, "", "right", "fnt_digits_green")); //塞入队列，以后根据bird数据来显示！
+			this.txtStatusPrevRed.push(new Text(this.game, 1190, y, "", "right", "fnt_digits_red"));//塞入队列，以后根据bird数据来显示！
+			this.txtStatusCurr.push(new Text(this.game, 1270, y, "", "right", "fnt_digits_blue"));//塞入队列，以后根据bird数据来显示！
 		}
 		
 		// create a text object displayed in the HUD footer to show info of the best unit ever born
@@ -265,7 +262,14 @@ App.Main.prototype = {
 						
 						// perform a proper action (flap yes/no) for this bird by activating its neural network
 						//根据神经网络判断当前的input1/2输入后，当前的神经网络NN给出了决策是flap煽动翅膀？还是noflap模拟重力下坠？
-						this.GA.activateBrain(bird, this.TargetPoint);
+						//this.GA.activateBrain(bird, this.TargetPoint);
+						var paramMap = new Map();
+                        paramMap.set('TargetPoint', this.TargetPoint);
+                        paramMap.set('TP1', new Point(this.TargetPoint.x,this.TargetPoint.y));
+                        var nextBarrier = this.getNextBarrier(this.targetBarrier.index);
+                        var tp2=new Point(nextBarrier.getGapX(),nextBarrier.getGapY());
+                        paramMap.set('TP2', tp2);
+                        this.GA.activateBrain(bird, paramMap);
 					}
 				}, this);
 				
@@ -279,6 +283,8 @@ App.Main.prototype = {
 				// 循环用树：当第一颗树移出左边界（屏幕），宽度为负的一棵树宽度，就表示完全移出了屏幕；
 				// 则将其节点添加到最后一棵树的右边并间隔一个barrier_distance的距离；
 				if (this.firstBarrier.getWorldX() < -this.firstBarrier.width){
+				    //一个treegroup（或称barriergroup）中的树是从左面移出一棵就添加到右面；
+				    //移到最右端后，和前一棵数的间距由外面控制，上下等参数由treegroup类的restart函数控制；
 					this.firstBarrier.restart(this.lastBarrier.getWorldX() + this.BARRIER_DISTANCE);
 					
 					this.firstBarrier = this.getNextBarrier(this.firstBarrier.index);
@@ -552,14 +558,14 @@ Bird.prototype = Object.create(Phaser.Sprite.prototype);
 Bird.prototype.constructor = Bird;
 
 Bird.prototype.restart = function(iteration){
-	this.fitness_prev = (iteration == 1) ? 0 : this.fitness_curr;
+	this.fitness_prev = (iteration == 1) ? 0 : this.fitness_curr; //第一次迭代则没有上一次数据；
 	this.fitness_curr = 0;
 	
 	this.score_prev = (iteration == 1) ? 0: this.score_curr;
 	this.score_curr = 0;
 	
 	this.alpha = 1;
-	this.reset(150, 300 + this.index * 20);
+	this.reset(150, 300 + this.index * 20); //重设图形元素初始位置；10个鸟的index不同，所以在起点站排队等候下次出发；
 };
 
 Bird.prototype.flap = function(){
