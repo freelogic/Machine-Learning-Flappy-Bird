@@ -263,13 +263,14 @@ App.Main.prototype = {
 						// perform a proper action (flap yes/no) for this bird by activating its neural network
 						//根据神经网络判断当前的input1/2输入后，当前的神经网络NN给出了决策是flap煽动翅膀？还是noflap模拟重力下坠？
 						//this.GA.activateBrain(bird, this.TargetPoint);
-						var paramMap = new Map();
-                        paramMap.set('TargetPoint', this.TargetPoint);
-                        paramMap.set('TP1', new Point(this.TargetPoint.x,this.TargetPoint.y));
+						var state = new Map();
+                        state.set('TargetPoint', this.TargetPoint);
+                        state.set('TP1', new Point(this.TargetPoint.x,this.TargetPoint.y));
                         var nextBarrier = this.getNextBarrier(this.targetBarrier.index);
                         var tp2=new Point(nextBarrier.getGapX(),nextBarrier.getGapY());
-                        paramMap.set('TP2', tp2);
-                        this.GA.activateBrain(bird, paramMap);
+                        state.set('TP2', tp2);
+                        state.set('lastFlappyActionStatus',bird.lastFlappyActionStatus);
+                        this.GA.activateBrain(bird, state);
 					}
 				}, this);
 				
@@ -552,6 +553,7 @@ var Bird = function(game, x, y, index) {
 
 	//CC: additional parameters
 	this.BIRD_VERTICAL_FLAPPY_SPEED = -700; //BIRD垂直往上飞(扑打翅膀)的速度;
+	this.lastFlappyActionStatus = false; //上一次bird是否flappy？0为noflap，1为flap；
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
@@ -571,6 +573,11 @@ Bird.prototype.restart = function(iteration){
 Bird.prototype.flap = function(){
 	//this.body.velocity.y = -400;
 	this.body.velocity.y = this.BIRD_VERTICAL_FLAPPY_SPEED;
+	this.lastFlappyActionStatus=1; //记录本次flappy状态供下次用。0为noflap，1为flap；
+};
+
+Bird.prototype.noflap = function(){
+	this.lastFlappyActionStatus=0; //记录本次flappy状态供下次用。0为noflap，1为flap；
 };
 
 Bird.prototype.death = function(){
