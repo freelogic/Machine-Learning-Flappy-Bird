@@ -1,0 +1,33 @@
+//非CDN引用方式，直接通过上下文（phaser.js框架）的上层代码的document标准容器来传递JS脚本script；
+//document.write('<script src="lib/cytoscape.js"></script>');
+
+//CDN引用方式（其中min一般是压缩格式较小，非min是原始格式方便开发和调测）
+//document.write('https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js');
+//https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js
+//https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.min.js
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+    <script type="text/javascript" src="lib/cytoscape.js"></script>
+    /*
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.2.11/cytoscape.js"></script>
+    */
+    <script type="text/javascript">
+        /*alert('Hello, World!');
+        console.log('Hello, World!');*/
+        #cy {
+          width: 300px;
+          height: 300px;
+          display: block;
+        }
+
+    </script>
+</body>
+</html>

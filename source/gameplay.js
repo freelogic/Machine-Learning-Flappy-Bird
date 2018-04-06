@@ -43,6 +43,7 @@ App.Main.prototype = {
 		this.game.load.spritesheet('imgButtons', 'assets/img_buttons.png', 110, 40, 3);
 		
 		this.game.load.image('imgTarget', 'assets/img_target.png');
+		this.game.load.image('imgTargetFlash', 'assets/img_target_flash.png');
 		this.game.load.image('imgGround', 'assets/img_ground.png');
 		this.game.load.image('imgPause', 'assets/img_pause.png');
 		this.game.load.image('imgLogo', 'assets/img_logo.png');
@@ -97,6 +98,8 @@ App.Main.prototype = {
 		//目标食物点（两棵树之间）
 		this.TargetPoint = this.game.add.sprite(0, 0, 'imgTarget');
 		this.TargetPoint.anchor.setTo(0.5);
+		this.TargetPointFlash = this.game.add.sprite(0, 0, 'imgTargetFlash');
+		this.TargetPointFlash.anchor.setTo(0.5);
 		
 		// create a scrolling Ground object
 		this.Ground = this.game.add.tileSprite(0, this.game.height-100, this.game.width-370, 100, 'imgGround');
@@ -177,6 +180,7 @@ App.Main.prototype = {
 				
 		// set initial App state
 		this.state = this.STATE_INIT;
+		this.oneOrMoreDangerous = false;
 	},
 	
 	update : function(){		
@@ -184,7 +188,6 @@ App.Main.prototype = {
 			case this.STATE_INIT: // init genetic algorithm
 				this.GA.reset();
 				this.GA.createPopulation();
-				
 				this.state = this.STATE_START;
 				break;
 				
@@ -237,10 +240,18 @@ App.Main.prototype = {
 				// update position of the target point
 				this.TargetPoint.x = this.targetBarrier.getGapX();
 				this.TargetPoint.y = this.targetBarrier.getGapY();
-				
 				var isNextTarget = false; // flag to know if we need to set the next target barrier
-				
+				if (this.oneOrMoreDangerous == true) {
+				    this.flashTargetPoint(this.TargetPoint.x,this.TargetPoint.y); //让当前TP闪烁变红；
+				}
+
 				this.BirdGroup.forEachAlive(function(bird){
+				    //判断，只要有任何一支活鸟判断为危险，且之前危险标志位为false，则设为true；
+                    if (bird.alive ==true && this.oneOrMoreDangerous ==false && this.isDangerous(bird,this.TargetPoint)==true){
+                        this.oneOrMoreDangerous = true;
+                    };
+                    //this.drawStatus();不能在处理每个鸟的时候都重绘，效率太低，太慢；
+
 					// calculate the current fitness and the score for this bird
 					//鸟的判决函数（fitness）=总距离-鸟到目标点的距离，就是当前的fitness，越大越好；
 					bird.fitness_curr = this.distance - this.game.physics.arcade.distanceBetween(bird, this.TargetPoint);
@@ -276,6 +287,11 @@ App.Main.prototype = {
 				
 				// if any bird passed through the current target barrier then set the next target barrier
 				if (isNextTarget){
+				    if (this.oneOrMoreDangerous == false) {
+				        this.flashTargetPoint(0,0); //左上角归零；
+				    }else{
+				        this.oneOrMoreDangerous = false;
+				    };
 					this.score++;
 					this.targetBarrier = this.getNextBarrier(this.targetBarrier.index);
 				}
@@ -290,7 +306,13 @@ App.Main.prototype = {
 					
 					this.firstBarrier = this.getNextBarrier(this.firstBarrier.index);
 					this.lastBarrier = this.getNextBarrier(this.lastBarrier.index);
+
+					if (this.oneOrMoreDangerous == true) {
+				        this.flashTargetPoint(this.firstBarrier.getGapX(),this.firstBarrier.getGapY());
+				    };
 				}
+
+
 				
 				// increase the travelled distance
 				this.distance += Math.abs(this.firstBarrier.topTree.deltaX);
@@ -424,6 +446,35 @@ App.Main.prototype = {
     },
     setGravityY : function(x) {this.game.physics.arcade.gravity.y = this.game.physics.arcade.gravity.y +x;},
     getGravityY : function() {return this.game.physics.arcade.gravity.y;},
+
+//根据运动学计算bird是否危险（理论不可能飞越随机产生的特别难（即，前后两排树上下差异特别大，难于飞越！）的情况）；
+
+    isDangerous : function(bird,tp) {
+        //算法：设定，未来的TP作为P1，飞鸟是P2，Vh=鸟平飞速度；V垂直向上是鸟flap速度Vf，向下是重力加速度Vg；
+        //     当TP在飞鸟前上方：则|X1-X2|/Vh>|Y1-Y2|/Vflap, 可以来得及上升飞抵TP，返回false，否则返回true，将会collide！
+        //     当TP在飞鸟前下方：则|X1-X2|/Vh>|Y1-Y2|/Vg, 可以来得及自由落体下降到达TP，返回false，否则返回true，将会collide！
+        //     其实就一个原则：水平平飞是恒定速度，所花费时间是恒定实际Th=|X1-X2|/Vh；看bird上飞下坠是否来得及；Tf<Th or Tg<Th;
+        th = Math.abs(tp.x-bird.x) / this.BarrierGroup.getAt(0).getBirdHorizontalFlySpeed();
+        th = Math.abs(th);
+        if (th<0.001) {return false; /*TOO SMALL, just ignore*/};
+        if (tp.y < bird.y) { //bird 当前低于TP,反之TP低于bird当前位置；
+            tf = Math.abs(tp.y-bird.y) / bird.getBirdVerticalFlappySpeed();
+            tf = Math.abs(tf);
+            //if (th<tf) {alert("th,tf = ("+th+", "+tf+")");};
+            return th<tf;
+        } else {
+            tg = Math.abs(tp.y-bird.y) / this.getGravityY();
+            tg = Math.abs(tg);
+            //if (th<tg) {alert("th,tg = ("+th+", "+tg+")");
+            return th<tg;
+        };
+    },
+
+    flashTargetPoint : function (x,y) {
+ 	    this.TargetPointFlash.x = x;
+ 	    this.TargetPointFlash.y = y;
+    },
+
 }
 
 /***********************************************************************************
@@ -462,7 +513,7 @@ TreeGroup.prototype.getTreeVerticalGap = function() {return this.TREE_VERTICAL_G
 
 //调整“相邻两树垂直间隔差异因子“方法；
 TreeGroup.prototype.adjustAdjacentTreeVerticalDifference = function(x) {
-    var ret1=checkValueInRange(this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR+x,1.00,0.01,"相邻两树垂直间隔差异因子");
+    var ret1=checkValueInRange(this.ADJACENT_TREE_VERTICAL_DIFFERENCE_FACTOR+x,5.00,0.01,"相邻两树垂直间隔差异因子");
     var ret2=checkValueInRange(x,0.10,-0.10,"相邻两树垂直间隔差异因子-增量");
     if (ret1&&ret2) {this.setAdjacentTreeVerticalDifference(x);};
 };
