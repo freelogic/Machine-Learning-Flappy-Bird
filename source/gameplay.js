@@ -604,7 +604,7 @@ var Bird = function(game, x, y, index) {
 
 	//CC: additional parameters
 	this.BIRD_VERTICAL_FLAPPY_SPEED = -700; //BIRD垂直往上飞(扑打翅膀)的速度;
-	this.lastFlappyActionStatus = false; //上一次bird是否flappy？0为noflap，1为flap；
+	this.lastFlappyActionStatus = 0.1; //上一次bird是否flappy？0为noflap，1为flap；
 };
 
 Bird.prototype = Object.create(Phaser.Sprite.prototype);
@@ -624,11 +624,11 @@ Bird.prototype.restart = function(iteration){
 Bird.prototype.flap = function(){
 	//this.body.velocity.y = -400;
 	this.body.velocity.y = this.BIRD_VERTICAL_FLAPPY_SPEED;
-	this.lastFlappyActionStatus=1; //记录本次flappy状态供下次用。0为noflap，1为flap；
+	this.lastFlappyActionStatus=0.9; //记录本次flappy状态供下次用。0为noflap，1为flap；
 };
 
 Bird.prototype.noflap = function(){
-	this.lastFlappyActionStatus=0; //记录本次flappy状态供下次用。0为noflap，1为flap；
+	this.lastFlappyActionStatus=0.1; //记录本次flappy状态供下次用。0为noflap，1为flap；
 };
 
 Bird.prototype.death = function(){
